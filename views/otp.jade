@@ -1,0 +1,68 @@
+doctype html
+html
+    head
+        title Jade Page
+        style.
+          body {
+            padding: 50px;
+            font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+          }
+          #main {
+            background-color: aliceblue;
+            padding: 40px;
+          }
+          #content {
+            max-width: 750px;
+            border-top: solid 4px #1da2b4;
+            font-size: 1px;
+            margin: 20px auto;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+          }
+          h2 {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 28px;
+            color: #1e1e1e;
+          }
+          h1 {
+            font-size: 40px;
+            font-weight: 500;
+            line-height: 22px;
+            color: #1da2b4;
+          }
+          p {
+            color: #000;
+            font-size: 20px;
+          }
+          #logo {
+            text-align: center;
+          }
+          #note p{
+            color: #000;
+            font-size: 14px;
+          }
+          #divider p{
+            border-top: solid 1px #dddddd;
+            font-size: 1px;
+            margin: 0px auto;
+            width: 100%;
+          }
+          #divider{
+            margin: 40px 0px 40px 0px;
+          }
+    body
+        #main
+          
+          #content  
+            h2 Verify your email,Your verification code will be valid for 5 minutes.
+            p You're signing up with your email account.
+            h1 #{data.otp}
+            p *Don't forward this email or verification code to anyone.
+            #divider
+              p 
+            #note   
+              p Any question or in need of help?
+              p You can refer to Help center or send email support@bitget.com to contact us
+              p * This mail is sent automatically and you do not need to reply. 
