@@ -20,6 +20,7 @@ app.set('view engine', 'jade');
 
 var corsOptions = {
   origin: "http://localhost:3000"
+
 };
 
 app.get('/api-blc',(req,res)=>{
@@ -117,6 +118,8 @@ app.get("/", (req, res) => {
 require("./app/routes/turorial.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/comman.routes")(app);
+require("./app/routes/token.routes")(app);
+require("./app/routes/assets.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;

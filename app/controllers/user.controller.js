@@ -79,12 +79,12 @@ exports.register = async (req, res) => {
           }
         }
         else {
-          console.log('OTP Expire')
+          // console.log('OTP Expire')
           return res.send({ status: 404, message: 'OTP Expired' })
         }
       }
       else {
-        console.log('OTP Not Matched')
+        // console.log('OTP Not Matched')
         return res.send({ status: 404, message: 'OTP Not Matched' })
       }
 
@@ -103,7 +103,9 @@ exports.register = async (req, res) => {
 // ================API Request Login user ============================
 // ===================================================================
 exports.login = async (req, res, next) => {
+
   const { username, password, dial_code, requestType, otp, time } = req.body;
+
   try {
     if (requestType === "email") {
       emailLogin(username, password, req, res, next);
@@ -134,10 +136,10 @@ const emailLogin = (username, password, req, res, next) => {
             let session = req.session;
             session.token = token;
             if (user.TwoFA === 'enable') {
-              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret });
+              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
             }
             else {
-              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret });
+              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code : user.own_code });
             }
           })
         })(req, res, next);
@@ -171,10 +173,10 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
           session.token = token;
           if (user.TwoFA === 'enable') {
             // let response = await sendSmsOtp(username, otp, res, true);
-            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret });
+            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
           }
           else {
-            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret });
+            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
           }
         })(req, res, next);
       }
