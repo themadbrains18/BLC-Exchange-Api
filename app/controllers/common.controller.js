@@ -258,6 +258,7 @@ const sendOtpEmail = async (email, otp, response, isReturn) => {
     });
   } catch (error) {
     console.error(' ===== ', error)
+    return response.send({ status: 500, message: error.message, });
     return error.message;
   }
 }
