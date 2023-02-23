@@ -120,6 +120,7 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/comman.routes")(app);
 require("./app/routes/token.routes")(app);
 require("./app/routes/assets.routes")(app);
+require("./app/routes/kyc.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
