@@ -185,11 +185,11 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
 
 exports.checkUser = async (req, res) => {
   const { email, number, dial_code, requestType } = req.body;
-  if (requestType === 'email') {
+  if (email !== '') {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, message: 'User Already Exist' })
+        res.send({ status: 200, message: 'This Email is already exist.Please choose another email.' })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -202,7 +202,39 @@ exports.checkUser = async (req, res) => {
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, message: 'User Already Exist' })
+        res.send({ status: 200, message: 'This Number is already exist.Please choose another number.' })
+      }
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+
+}
+
+exports.userAuthenticate = async (req, res) => {
+  const { email, number, dial_code } = req.body;
+
+  if (email !== '') {
+    var condition = email ? { email: { [Op.like]: email } } : null;
+    users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+  else {
+    var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
+    users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
