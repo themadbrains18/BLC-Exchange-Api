@@ -16,7 +16,7 @@ const tokenSecret = 'mdb!@#123psd';
 exports.register = async (req, res) => {
   const { email, number, password, dial_code, requestType, referal_code, otp, time } = req.body
   var secret = speakeasy.generateSecret({ length: 20 });
-  var own_refer_code = await generator.generate({
+  var own_refer_code =  generator.generate({
     length: 8,
     numbers: true
   });
