@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     networkName: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     confirmations: {
       type: DataTypes.INTEGER,
@@ -11,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     Network: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     type:{
       type: DataTypes.STRING,

@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     coinName: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     status : {
       type : DataTypes.BOOLEAN,
@@ -11,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     fullName :{
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     minimum_withdraw : {
       type : DataTypes.DOUBLE,
