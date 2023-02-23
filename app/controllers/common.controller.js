@@ -21,7 +21,7 @@ const userOtp = db.userotp;
 const users = db.users;
 
 const { SMTP_SECURE, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER, web3Provider } = require('../config/db.config.js');
-console.log(SMTP_USER,'====SMTP_USER')
+console.log(SMTP_USER, '====SMTP_USER')
 var app = express();
 
 app.set('views', path.dirname('../') + '/views');
@@ -49,77 +49,6 @@ if (SMTP_USER == '') {
   });
 }
 
-exports.match=async(req,res)=>{
-  const { username, otp, time } = req.body;
-  var otpCondition = username ? { [Op.and]: [{ username: username }, { otp: otp }] } : null;
-    userOtp.findOne({ where: otpCondition }).then(async (result) => {
-      if (result) {
-        let addMin = 5;
-        if (new Date(result.createdAt).getTime() + addMin * 60000 > new Date(time).getTime()) {
-          return res.send({ status: 200, message: 'OTP Matched' })
-        }
-        else {
-          console.log('OTP Expire')
-          return res.send({ status: 404, message: 'OTP Expired' })
-        }
-      }
-      else {
-        console.log('OTP Not Matched')
-        return res.send({ status: 404, message: 'OTP Not Matched' })
-      }
-    }).catch((error) => {
-      console.error(error);
-      res.send({ status: 500, data: error });
-    })
-}
-
-// ===================================================================
-// ================API Request To send OTP ===========================
-// ===================================================================
-
-exports.send = async (req, res) => {
-  const { email, number, dial_code, requestType, resetPassword } = req.body;
-  try {
-    let otp = createRandomNumber(6, true, false, false);
-
-    if (requestType === "email") {
-      if (resetPassword === true) {
-        var condition = email ? { email: { [Op.like]: email } } : null;
-        users.findOne({ where: condition }).then(async (result) => {
-          if (result) {
-            sendEmailOtp(email, otp, res)
-          }
-          else {
-            return res.send({ status: 404, message: 'This Email is not exist' })
-          }
-        })
-      }
-      else {
-        sendEmailOtp(email, otp, res)
-      }
-    }
-    else if (requestType === "mobile") {
-      if (resetPassword === true) {
-        var condition = number ? { number: { [Op.like]: number } } : null;
-        users.findOne({ where: condition }).then(async (result) => {
-          console.log("===result", result);
-          if (result) {
-            sendMobileOtp(number, otp, dial_code, res);
-          }
-          else {
-            return res.send({ status: 404, message: 'This Phone number is not exist. ' })
-          }
-        })
-      }
-      else {
-        sendMobileOtp(number, otp, dial_code, res);
-      }
-    }
-  } catch (error) {
-    res.send({ status: 500, message: error })
-  }
-}
-
 // ===================================================================
 // ==================Create random 6 digit OTP========================
 // ===================================================================
@@ -133,11 +62,132 @@ const createRandomNumber = (length, numbers, lowercase, uppercase) => {
   })
 }
 
+
+exports.match = async (req, res) => {
+  const { username, otp, time } = req.body;
+  var otpCondition = username ? { [Op.and]: [{ username: username }, { otp: otp }] } : null;
+  userOtp.findOne({ where: otpCondition }).then(async (result) => {
+    if (result) {
+      let addMin = 5;
+      if (new Date(result.createdAt).getTime() + addMin * 60000 > new Date(time).getTime()) {
+        return res.send({ status: 200, message: 'OTP Matched' })
+      }
+      else {
+        console.log('OTP Expire')
+        return res.send({ status: 404, message: 'OTP Expired' })
+      }
+    }
+    else {
+      console.log('OTP Not Matched')
+      return res.send({ status: 404, message: 'OTP Not Matched' })
+    }
+  }).catch((error) => {
+    console.error(error);
+    res.send({ status: 500, data: error });
+  })
+}
+
+// ===================================================================
+// ================API Request To send Email OTP ===========================
+// ===================================================================
+
+exports.sendemail = async (req, res) => {
+  const { email } = req.body;
+  try {
+    let otp = createRandomNumber(6, true, false, false);
+    await sendEmailOtp(email, otp, res);
+  } catch (error) {
+    res.send({ status: 500, message: error })
+  }
+}
+
+// ===================================================================
+// =============Destroy previous Email OTP adn Stroe new Email OTP================
+// ===================================================================
+const sendEmailOtp = async (email, otp, res) => {
+  try {
+    var condition = email ? { username: { [Op.like]: email } } : null;
+    await userOtp.findOne({ where: condition }).then(async (otpExist) => {
+      if (otpExist) {
+        console.log('=======step 1====')
+        await userOtp.destroy({ where: { username: { [Op.like]: email } } }).then(async (deleteOtp) => {
+          if (deleteOtp) {
+            console.log('=======step 2====')
+            await userOtp.create({ username: email, otp: otp }).then(async (result) => {
+              console.log('=======step 3====')
+              await sendOtpEmail(email, otp, res); //Send password email to register email 
+            }).catch((error) => {
+              return { status: 500, data: error }
+            })
+          }
+        })
+      }
+      else {
+        await userOtp.create({ username: email, otp: otp }).then(async (result) => {
+          await sendOtpEmail(email, otp, res); //Send password email to register email 
+        }).catch((error) => {
+          return { status: 500, data: error }
+        })
+      }
+    }).catch((error) => {
+      return { status: 500, data: error }
+    })
+  } catch (error) {
+    console.log(error)
+    return { status: 500, data: error }
+  }
+
+}
+
+// ===================================================================
+// ==========================Final OTP Email Send=====================
+// ===================================================================
+const sendOtpEmail = async (email, otp, res) => {
+  console.log('=======step 4====')
+  try {
+    app.mailer.send('otp', {
+      to: email,
+      subject: `【BLC EXCHANGE】Otp Verification`,
+      data: { email: email, otp: otp }
+    }, (err) => {
+      console.log(err, ' errerrerr')
+
+      if (err) {
+        console.log(err)
+        return { status: 500, message: err.message };
+      } else {
+        console.log('=======step 7====')
+        res.status(200).send({ status:200, message: "Otp Sent" });
+      }
+
+    })
+
+  } catch (error) {
+    console.error(' ===== ', error)
+    return { status: 500, message: error.message, };
+  }
+}
+
+// ===================================================================
+// ================API Request To send SMS OTP ===========================
+// ===================================================================
+
+exports.sendsms = async (req, res) => {
+  const { number, dial_code } = req.body;
+  try {
+    let otp = createRandomNumber(6, true, false, false);
+    await sendMobileOtp(number, otp, dial_code, res);
+
+  } catch (error) {
+    res.send({ status: 500, message: error })
+  }
+}
+
 // ===================================================================
 // =======Destroy previous Mobile OTP adn Stroe new Mobile OTP========
 // ===================================================================
 
-const sendMobileOtp = (number, otp, dial_code, res) => {
+const sendMobileOtp = async (number, otp, dial_code,res) => {
   let bobo = { "username": number, "otp": otp };
   try {
     var condition = number ? { username: { [Op.like]: number } } : null;
@@ -181,87 +231,24 @@ const sendMobileOtp = (number, otp, dial_code, res) => {
 // ===================================================================
 // ==========================Final OTP SMS Send=====================
 // ===================================================================
-const sendSmsOtp = async (number, Otp, res, isReturn) => {
+const sendSmsOtp = async (number, Otp, res) => {
   try {
     let message = 'Dear User, Your OTP is ' + Otp + ' Never share this OTP with anyone, this OTP expire in two minutes. More Info: https://stackoverflow.com/ From mlmsig'
     let url = 'http://sms.gniwebsolutions.com/submitsms.jsp?user=' + process.env.SMSUSER + '&key=' + process.env.SMSKEY + '&mobile=' + number + '&senderid=' + process.env.SMSSENDERID + '&message=' + message + '&accusage=' + process.env.ACCUSAGE;
     console.log(url);
 
-
     await axios.get(url)
       .then(function (response) {
         console.log(response.data);
-        return res.send({ status: 200, message: 'OTP has been sent on Mobile Number', "otp": Otp });
+        return res.status(200).send({status:200, message: 'OTP has been sent on Mobile Number'});
       })
       .catch(error => console.log('error', error));
   } catch (error) {
     console.error(' ===== ', error)
-    return error.message;
-  }
-}
-
-// ===================================================================
-// =============Destroy previous Email OTP adn Stroe new Email OTP================
-// ===================================================================
-const sendEmailOtp = (email, otp, res) => {
-  try {
-    var condition = email ? { username: { [Op.like]: email } } : null;
-    userOtp.findOne({ where: condition }).then((otpExist) => {
-      if (otpExist) {
-        userOtp.destroy({ where: { username: { [Op.like]: email } } }).then((deleteOtp) => {
-          if (deleteOtp) {
-            userOtp.create({ username: email, otp: otp }).then(async (result) => {
-              await sendOtpEmail(email, otp, res); //Send password email to register email 
-            }).catch((error) => {
-              return res.send({ status: 500, data: error })
-            })
-          }
-        })
-      }
-      else {
-        userOtp.create({ username: email, otp: otp }).then(async (result) => {
-          await sendOtpEmail(email, otp, res); //Send password email to register email 
-        }).catch((error) => {
-          return res.send({ status: 500, data: error })
-        })
-      }
-    }).catch((error) => {
-      return res.send({ status: 500, data: error })
-    })
-  } catch (error) {
-    console.log(error)
     return res.send({ status: 500, data: error })
   }
-
 }
 
-// ===================================================================
-// ==========================Final OTP Email Send=====================
-// ===================================================================
-const sendOtpEmail = async (email, otp, response, isReturn) => {
-  try {
-    await app.mailer.send('otp', {
-      to: email,
-      subject: `【BLC EXCHANGE】Otp Verification`,
-      data: { email: email, otp: otp }
-    }, (err) => {
-      if (err) {
-        console.log(err)
-        return response.send({ status: 200, message: err.message });
-      }
-      if (isReturn) {
-        return { status: 200, message: otp };
-      }
-      else {
-        return response.send({ status: 200, message: 'OTP Email has been sent', "otp": otp });
-      }
-    });
-  } catch (error) {
-    console.error(' ===== ', error)
-    return response.send({ status: 500, message: error.message, });
-    return error.message;
-  }
-}
 
 exports.storeWalletAddress = async (id) => {
   let account = generateBEP20Address(web3Provider);
@@ -279,7 +266,7 @@ exports.storeWalletAddress = async (id) => {
   encryptedTrc20Key += trc20cipher.final("hex");
 
   try {
-    users.update({ bep20Address: account.address, bep20Hashkey: encryptedBep20Key, trc20Address: trc20Account, trc20Hashkey: encryptedTrc20Key },{ where :{id: id}}).then((result) => {
+    users.update({ bep20Address: account.address, bep20Hashkey: encryptedBep20Key, trc20Address: trc20Account, trc20Hashkey: encryptedTrc20Key }, { where: { id: id } }).then((result) => {
       if (result) {
         console.log('User Wallet Address updated');
         return 'User Wallet Address updated';

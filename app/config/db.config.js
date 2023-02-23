@@ -13,10 +13,8 @@ module.exports = {
   SMTP_HOST: "smtp.gmail.com",
   SMTP_PORT: '587',
   SMTP_SECURE_TYPE: 'Tls',
-  SMTP_USER: 'surinderdhanjufss@gmail.com',
-  SMTP_PASSWORD: 'lmmyrkpjsebbdgoj', 
-  // SMTP_USER: 'blcexchange.net@gmail.com',// 'surinderdhanjufss@gmail.com',
-  // SMTP_PASSWORD: 'yeaqfufvtyybzggm',// 'lmmyrkpjsebbdgoj',
+  SMTP_USER: 'surinderdhanjufss@gmail.com',//'blcexchange.net@gmail.com' ,
+  SMTP_PASSWORD: 'lmmyrkpjsebbdgoj',//'yeaqfufvtyybzggm' ,
   SMTP_SECURE: false,
   web3Provider: "https://data-seed-prebsc-1-s1.binance.org:8545/"
 };

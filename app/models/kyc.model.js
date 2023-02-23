@@ -15,12 +15,10 @@ module.exports = (sequelize, DataTypes) => {
             name: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: true
             },
             lname: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: true
             },
             doctype: {
                 type: DataTypes.STRING,
@@ -51,6 +49,11 @@ module.exports = (sequelize, DataTypes) => {
         },
 
     );
+// Kyc.sync().then(() => {
+//     console.log('New table created');
+//   }).finally(() => {
+//     sequelize.close();
+//   })
 
 
 

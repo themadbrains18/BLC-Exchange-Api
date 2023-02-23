@@ -135,12 +135,7 @@ const emailLogin = (username, password, req, res, next) => {
             token = jwt.sign({ id: user.id }, tokenSecret, { expiresIn: '5h' });
             let session = req.session;
             session.token = token;
-            if (user.TwoFA === 'enable') {
-              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
-            }
-            else {
-              return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code : user.own_code });
-            }
+            return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
           })
         })(req, res, next);
       } catch (error) {
@@ -171,13 +166,7 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
           token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
           let session = req.session;
           session.token = token;
-          if (user.TwoFA === 'enable') {
-            // let response = await sendSmsOtp(username, otp, res, true);
-            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, fa_code: otp, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
-          }
-          else {
-            return res.send({ status: 200, id: user._id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret,own_code :user.own_code });
-          }
+          return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
         })(req, res, next);
       }
       else {
@@ -196,31 +185,76 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
 
 exports.checkUser = async (req, res) => {
   const { email, number, dial_code, requestType } = req.body;
-  if(requestType === 'email'){
+  if (requestType === 'email') {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition }).then(async (result) => {
-      if(result){
-        res.send({status : 200, message : 'User Already Exist'})
+      if (result) {
+        res.send({ status: 200, message: 'User Already Exist' })
       }
-      else{
-        res.send({status : 404, message : 'User Not Exist'})
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
       }
-    }).catch((error)=>{
+    }).catch((error) => {
       console.error('===', error);
     })
   }
-  else{
+  else {
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition }).then(async (result) => {
-      if(result){
-        res.send({status : 200, message : 'User Already Exist'})
+      if (result) {
+        res.send({ status: 200, message: 'User Already Exist' })
       }
-      else{
-        res.send({status : 404, message : 'User Not Exist'})
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
       }
-    }).catch((error)=>{
+    }).catch((error) => {
       console.error('===', error);
     })
   }
-  
+
+}
+
+
+exports.updateUser = (req, res) => {
+  try {
+    users.findOne({ where: { id: req.body.id } }).then((record) => {
+      if (record) {
+        record.update(req.body).then((updateRecord) => {
+          if (updateRecord) {
+            res.status(200).send({ status: 200, data: record });
+          }
+        }).catch((error) => {
+          res.status(500).send({ message: error });
+        })
+      }
+      else {
+        res.status(401).send({ message: 'not found' });
+      }
+    }).catch((error) => {
+      console.error('=========', error);
+      res.status(500).send({ message: error });
+    })
+  } catch (error) {
+    console.error('=========', error);
+    res.status(500).send({ message: error });
+  }
+}
+
+exports.verifyGoogleAuth = (req, res) => {
+  const { secret, token } = req.body;
+  try {
+    console.log(secret, token);
+    const { base32, hex } = secret;
+    const isVerified = speakeasy.totp.verify({
+      secret: base32,
+      encoding: "base32",
+      token: token
+    });
+
+    console.log("isVerified -->", isVerified);
+
+    return res.send({ status: 200, message: isVerified })
+  } catch (error) {
+
+  }
 }

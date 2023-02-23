@@ -7,10 +7,10 @@ exports.create = async (req, res) => {
 
   console.log("======kyc", req.body)
 
-  const { fname, lname, doctype, docnumber, dob, idfront, idback, country } = req.body
+  const { fname, lname, doctype, docnumber, dob, idfront, idback, country, user_id } = req.body
 
   try {
-    Kyc.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country }).then(async (data) => {
+    Kyc.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country, user_id:user_id }).then(async (data) => {
       if (data) {
         // console.log(data)
         return res.send({ status: 200, message: "KYC Done succssfully!", data });
