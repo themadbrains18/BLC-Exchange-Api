@@ -18,7 +18,9 @@ exports.register = async (req, res) => {
   var secret = speakeasy.generateSecret({ length: 20 });
   var own_refer_code = await generator.generate({
     length: 8,
-    numbers: true
+    numbers: true,
+    uppercase: true,
+    lowercase : false
   });
   try {
     let ifUser;
