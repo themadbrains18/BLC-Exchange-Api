@@ -8,6 +8,7 @@ module.exports = app => {
   router.post('/',users.checkUser);
   router.put('/update',users.updateUser);
   router.post('/googleAuth', users.verifyGoogleAuth);
+  router.post('/userinfo',users.userAuthenticate);
 
   app.use('/api-blc/users', router);
 };

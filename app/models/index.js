@@ -26,6 +26,6 @@ db.tokens = require('./token.model.js')(sequelize, DataTypes);
 db.networks = require('./network.model.js')(sequelize, DataTypes);
 db.kyc = require('./kyc.model.js')(sequelize, DataTypes);
 
-// db.sequelize.sync({ force: true });
+// db.sequelize.sync({ force: true }); 
    
 module.exports = db;
