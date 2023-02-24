@@ -183,6 +183,9 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
   }
 }
 
+// ===================================================================
+// ================Check user exist or not Request Login user ============================
+// ===================================================================
 exports.checkUser = async (req, res) => {
   const { email, number, dial_code, requestType } = req.body;
   if (email !== '') {
@@ -214,6 +217,9 @@ exports.checkUser = async (req, res) => {
 
 }
 
+// ===================================================================
+// ====user authenticate everytime Request Login user ================
+// ===================================================================
 exports.userAuthenticate = async (req, res) => {
   const { email, number, dial_code } = req.body;
 
@@ -246,8 +252,11 @@ exports.userAuthenticate = async (req, res) => {
 
 }
 
-
+// ===================================================================
+// ====update user Request Login user ================
+// ===================================================================
 exports.updateUser = (req, res) => {
+  console.log(req.body)
   try {
     users.findOne({ where: { id: req.body.id } }).then((record) => {
       if (record) {
@@ -272,6 +281,9 @@ exports.updateUser = (req, res) => {
   }
 }
 
+// ===================================================================
+// ====Google Authentication code verifiy Request Login user ================
+// ===================================================================
 exports.verifyGoogleAuth = (req, res) => {
   const { secret, token } = req.body;
   try {
@@ -288,5 +300,96 @@ exports.verifyGoogleAuth = (req, res) => {
     return res.send({ status: 200, message: isVerified })
   } catch (error) {
 
+  }
+}
+
+// ===================================================================
+// ====user password update Request Login user ================
+// ===================================================================
+
+exports.updatePassword = async (req, res) => {
+  const { newpassword } = req.body;
+
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      let bcryptPassword = bcrypt.hashSync(newpassword, 12);
+      user.update({ passwordHash: bcryptPassword }).then((updateRecord) => {
+        if (updateRecord) {
+          res.send({ status: 200, data: updateRecord });
+        }
+      }).catch((error) => {
+        res.send({ status: 500, data: error })
+      })
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+
+}
+
+// ===================================================================
+// ====user password confirm matched ================
+// ===================================================================
+exports.confirmPassword = async (req,res) => {
+  const { oldpassword } = req.body;
+
+  var isValidPassword = function (userpass, password) {
+    return bcrypt.compareSync(password, userpass);
+  }
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      if (!isValidPassword(user.passwordHash, oldpassword)) {
+        res.send({ status: 401, message: 'Old Password not matched' });
+      }
+      else {
+        res.send({ status: 200, message: 'Password matched' });
+      }
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+}
+
+// ===================================================================
+// ====user fund code confirm matched ================
+// ===================================================================
+exports.confirmFuncode = async (req,res) => {
+  const { oldcode } = req.body;
+
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      if (user.tradingPassword !== oldcode) {
+        res.send({ status: 401, message: 'Old Fun Code Not Matched' });
+      }
+      else {
+        res.send({ status: 200, message: 'Fun Code Matched' });
+      }
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+}
+
+// ===================================================================
+// ====user delete confirm matched ================
+// ===================================================================
+exports.removeUser=async(req,res)=>{
+  console.log(req.params.id)
+  try {
+    await users.destroy({ where: { id: parseInt(req.params.id) } }).then((remove)=>{
+      if(remove){
+        res.send({status : 200, message : 'Account delete successfully.You have not access this account before again created.'})
+      }
+      else{
+        res.send({status : 200, message : 'No account found'})
+      }
+    }).catch((error)=>{
+      res.send({status :500, data:error});
+    });
+  } catch (error) {
+    res.send({status :500, data:error});
   }
 }
