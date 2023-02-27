@@ -6,6 +6,8 @@ module.exports = app => {
   router.post("/create", users.register);
   router.post("/login", users.login);
   router.post('/',users.checkUser);
+  router.put('/update',users.updateUser);
+  router.post('/googleAuth', users.verifyGoogleAuth);
 
   app.use('/api-blc/users', router);
 };
