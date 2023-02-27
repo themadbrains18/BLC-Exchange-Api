@@ -67,6 +67,7 @@ exports.match = async (req, res) => {
   const { username, otp, time } = req.body;
   var otpCondition = username ? { [Op.and]: [{ username: username }, { otp: otp }] } : null;
   userOtp.findOne({ where: otpCondition }).then(async (result) => {
+    console.log(result,'======result')
     if (result) {
       let addMin = 5;
       if (new Date(result.createdAt).getTime() + addMin * 60000 > new Date(time).getTime()) {

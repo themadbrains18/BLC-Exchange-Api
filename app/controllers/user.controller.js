@@ -18,7 +18,9 @@ exports.register = async (req, res) => {
   var secret = speakeasy.generateSecret({ length: 20 });
   var own_refer_code =  generator.generate({
     length: 8,
-    numbers: true
+    numbers: true,
+    uppercase: true,
+    lowercase : false
   });
   try {
     let ifUser;
@@ -183,13 +185,16 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
   }
 }
 
+// ===================================================================
+// ================Check user exist or not Request Login user ============================
+// ===================================================================
 exports.checkUser = async (req, res) => {
   const { email, number, dial_code, requestType } = req.body;
-  if (requestType === 'email') {
+  if (email !== '') {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, message: 'User Already Exist' })
+        res.send({ status: 200, message: 'This Email is already exist.Please choose another email.' })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -202,7 +207,7 @@ exports.checkUser = async (req, res) => {
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, message: 'User Already Exist' })
+        res.send({ status: 200, message: 'This Number is already exist.Please choose another number.' })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -214,8 +219,46 @@ exports.checkUser = async (req, res) => {
 
 }
 
+// ===================================================================
+// ====user authenticate everytime Request Login user ================
+// ===================================================================
+exports.userAuthenticate = async (req, res) => {
+  const { email, number, dial_code } = req.body;
 
+  if (email !== '') {
+    var condition = email ? { email: { [Op.like]: email } } : null;
+    users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+  else {
+    var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
+    users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'User Not Exist' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+
+}
+
+// ===================================================================
+// ====update user Request Login user ================
+// ===================================================================
 exports.updateUser = (req, res) => {
+  console.log(req.body)
   try {
     users.findOne({ where: { id: req.body.id } }).then((record) => {
       if (record) {
@@ -240,6 +283,9 @@ exports.updateUser = (req, res) => {
   }
 }
 
+// ===================================================================
+// ====Google Authentication code verifiy Request Login user ================
+// ===================================================================
 exports.verifyGoogleAuth = (req, res) => {
   const { secret, token } = req.body;
   try {
@@ -256,5 +302,96 @@ exports.verifyGoogleAuth = (req, res) => {
     return res.send({ status: 200, message: isVerified })
   } catch (error) {
 
+  }
+}
+
+// ===================================================================
+// ====user password update Request Login user ================
+// ===================================================================
+
+exports.updatePassword = async (req, res) => {
+  const { newpassword } = req.body;
+
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      let bcryptPassword = bcrypt.hashSync(newpassword, 12);
+      user.update({ passwordHash: bcryptPassword }).then((updateRecord) => {
+        if (updateRecord) {
+          res.send({ status: 200, data: updateRecord });
+        }
+      }).catch((error) => {
+        res.send({ status: 500, data: error })
+      })
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+
+}
+
+// ===================================================================
+// ====user password confirm matched ================
+// ===================================================================
+exports.confirmPassword = async (req,res) => {
+  const { oldpassword } = req.body;
+
+  var isValidPassword = function (userpass, password) {
+    return bcrypt.compareSync(password, userpass);
+  }
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      if (!isValidPassword(user.passwordHash, oldpassword)) {
+        res.send({ status: 401, message: 'Old Password not matched' });
+      }
+      else {
+        res.send({ status: 200, message: 'Password matched' });
+      }
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+}
+
+// ===================================================================
+// ====user fund code confirm matched ================
+// ===================================================================
+exports.confirmFuncode = async (req,res) => {
+  const { oldcode } = req.body;
+
+  users.findOne({ where: { id: req.body.id } }).then((user) => {
+    if (user) {
+      if (user.tradingPassword !== oldcode) {
+        res.send({ status: 401, message: 'Old Fun Code Not Matched' });
+      }
+      else {
+        res.send({ status: 200, message: 'Fun Code Matched' });
+      }
+    }
+  }).catch((error) => {
+    console.error('====', error);
+    return res.send({ status: 200, data: error });
+  })
+}
+
+// ===================================================================
+// ====user delete confirm matched ================
+// ===================================================================
+exports.removeUser=async(req,res)=>{
+  console.log(req.params.id)
+  try {
+    await users.destroy({ where: { id: parseInt(req.params.id) } }).then((remove)=>{
+      if(remove){
+        res.send({status : 200, message : 'Account delete successfully.You have not access this account before again created.'})
+      }
+      else{
+        res.send({status : 200, message : 'No account found'})
+      }
+    }).catch((error)=>{
+      res.send({status :500, data:error});
+    });
+  } catch (error) {
+    res.send({status :500, data:error});
   }
 }

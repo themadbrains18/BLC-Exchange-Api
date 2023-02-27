@@ -1,15 +1,16 @@
 module.exports = (sequelize, DataTypes) => {
   const Tokens = sequelize.define("token", {
-    coinName: {
+    symbol: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
-    status : {
-      type : DataTypes.BOOLEAN,
-      allowNull: true,
-    },
     fullName :{
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    address :{
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
@@ -18,17 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       type : DataTypes.DOUBLE,
       allowNull: false,
     },
-    confirmations: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     decimals: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    type: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
     tokenType:{
       type: DataTypes.STRING,
@@ -36,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     image: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status : {
+      type : DataTypes.BOOLEAN,
       allowNull: true,
     },
     networks : {

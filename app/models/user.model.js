@@ -63,6 +63,9 @@ module.exports = (sequelize, DataTypes) => {
             refeer_code: {
                 type: DataTypes.STRING,
             },
+            antiphishing: {
+                type: DataTypes.STRING,
+            },
             createdAt: {
                 type: DataTypes.DATE
             },
@@ -80,7 +83,11 @@ module.exports = (sequelize, DataTypes) => {
             }
         });
 
-
+    // User.sync().then(() => {
+    //     console.log('New table created');
+    // }).finally(() => {
+    //     sequelize.close();
+    // })
 
     return User;
 };
