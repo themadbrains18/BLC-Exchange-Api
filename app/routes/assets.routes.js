@@ -4,6 +4,7 @@ module.exports = app => {
   var router = require("express").Router();
 
   router.get('/',assets.assetsList)
+  router.get('/:id',assets.assetsById)
 
   app.use('/api-blc/assets', router);
 };
