@@ -395,3 +395,20 @@ exports.removeUser=async(req,res)=>{
     res.send({status :500, data:error});
   }
 }
+
+exports.depositAddress=async(req,res)=>{
+  try {
+    users.findOne({where : {id : req.params.id}}).then((user)=>{
+      if(user){
+        let address = req.params.type === 'bep20' ? user.bep20Address : req.params.type === 'erc20' ? user.bep20Address : user.trc20Address;
+        console.log(address);
+        res.send({status : 200, deposit_address : address})
+      }
+    }).catch((error)=>{
+      console.error('=========', error);
+      res.send({status : 500, data : error});
+    })
+  } catch (error) {
+    
+  }
+}

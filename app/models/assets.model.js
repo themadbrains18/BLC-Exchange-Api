@@ -16,16 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    network: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     balance:{
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
   });
-
 
   // UserAssets.sync().then(() => {
   //   console.log('New table created');

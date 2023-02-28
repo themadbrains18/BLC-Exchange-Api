@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
             user_id: {
                 type: DataTypes.STRING,
                 allowNull: false,
-              },
+            },
             country: {
                 type: DataTypes.STRING,
                 defaultValue: ''
@@ -49,13 +49,11 @@ module.exports = (sequelize, DataTypes) => {
         },
 
     );
-// Kyc.sync().then(() => {
-//     console.log('New table created');
-//   }).finally(() => {
-//     sequelize.close();
-//   })
-
-
+    // Kyc.sync().then(() => {
+    //     console.log('New table created');
+    //   }).finally(() => {
+    //     sequelize.close();
+    //   })
 
     return Kyc;
 };
