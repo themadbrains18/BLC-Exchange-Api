@@ -1,7 +1,23 @@
 const db = require("../models");
-const users = db.assets;
+const assets = db.assets;
 const { Op } = require("sequelize");
 
 exports.assetsList=async(req,res)=>{
-  return res.status(200).send({dataa:"Here Assets List"});
+  assets.findAll().then(async(result)=>{
+    if(result){
+      res.status(200).send(result);
+    }
+  }).catch((error)=>{
+    console.error('===========', error);
+  })
+}
+exports.assetsById=async(req,res)=>{
+  console.log("========req", req.params.id)
+  assets.findAll({ where: { userID: parseInt(req.params.id) } }).then(async(result)=>{
+    if(result){
+      res.status(200).send(result);
+    }
+  }).catch((error)=>{
+    console.error('===========', error);
+  })
 }
