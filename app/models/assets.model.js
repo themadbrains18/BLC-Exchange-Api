@@ -13,13 +13,17 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     token_id: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     balance:{
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
+    network:{
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   });
 
   // UserAssets.sync().then(() => {
