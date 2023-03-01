@@ -16,3 +16,4 @@ module.exports = {
   SMTP_USER: 'blcexchange.net@gmail.com',// 'surinderdhanjufss@gmail.com',
   SMTP_PASSWORD: 'yeaqfufvtyybzggm',// 'lmmyrkpjsebbdgoj',
 };
+
