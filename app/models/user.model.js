@@ -7,12 +7,12 @@ module.exports = (sequelize, DataTypes) => {
             number: {
                 type: DataTypes.STRING,
                 defaultValue: '',
-                unique: true
+                allowNull :true
             },
             email: {
                 type: DataTypes.STRING,
                 defaultValue: '',
-                unique: true
+                allowNull :true
             },
             dial_code: {
                 type: DataTypes.INTEGER

@@ -5,6 +5,7 @@ module.exports = app => {
 
   router.get('/',assets.assetsList)
   router.get('/:id',assets.assetsById)
+  router.post('/wallettransfer', assets.walletTowalletTranserfer)
 
   app.use('/api-blc/assets', router);
 };
