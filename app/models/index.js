@@ -3,6 +3,7 @@ const dbConfig = require("../config/db.config.js");
 const {Sequelize ,Model, Op , DataTypes } = require("sequelize");
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
+
   dialect: dbConfig.dialect,
   operatorsAliases: false,
   pool: {
@@ -27,6 +28,7 @@ db.networks = require('./network.model.js')(sequelize, DataTypes);
 db.kyc = require('./kyc.model.js')(sequelize, DataTypes);
 db.transferhistory = require('./transferhistory.model')(sequelize, DataTypes);
 
+db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 // db.sequelize.sync({ force: true }); 
    
 module.exports = db;
