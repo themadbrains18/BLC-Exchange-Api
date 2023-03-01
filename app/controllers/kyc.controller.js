@@ -9,10 +9,10 @@ exports.create = async (req, res) => {
 
   console.log("======kyc", req.body)
 
-  const { fname, lname, doctype, docnumber, dob, idfront, idback, country, user_id } = req.body
+  const { fname, lname, doctype, docnumber, dob, idfront, idback, country, user_id, statement } = req.body
 
   try {
-    Kyc.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country, user_id:user_id }).then(async (data) => {
+    Kyc.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country, user_id:user_id,statement:statement }).then(async (data) => {
       if (data) {
         Users.update({kycstatus:true}, {
           where: { id: user_id }

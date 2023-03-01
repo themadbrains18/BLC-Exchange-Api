@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
             idback: {
                 type: DataTypes.STRING
             },
-            phone: {
+            statement: {
                 type: DataTypes.STRING
             },
             createdAt: {
