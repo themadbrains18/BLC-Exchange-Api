@@ -19,6 +19,8 @@ const decipher = crypto.createDecipheriv(algorithm, Securitykey, initVector);
 
 const userOtp = db.userotp;
 const users = db.users;
+const tokens = db.tokens;
+const assets = db.assets;
 
 const { SMTP_SECURE, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER, web3Provider } = require('../config/db.config.js');
 console.log(SMTP_USER, '====SMTP_USER')
@@ -67,7 +69,7 @@ exports.match = async (req, res) => {
   const { username, otp, time } = req.body;
   var otpCondition = username ? { [Op.and]: [{ username: username }, { otp: otp }] } : null;
   userOtp.findOne({ where: otpCondition }).then(async (result) => {
-    console.log(result,'======result')
+    console.log(result, '======result')
     if (result) {
       let addMin = 5;
       if (new Date(result.createdAt).getTime() + addMin * 60000 > new Date(time).getTime()) {
@@ -158,7 +160,7 @@ const sendOtpEmail = async (email, otp, res) => {
         return { status: 500, message: err.message };
       } else {
         console.log('=======step 7====')
-        res.status(200).send({ status:200, message: "Otp Sent" });
+        res.status(200).send({ status: 200, message: "Otp Sent" });
       }
 
     })
@@ -188,7 +190,7 @@ exports.sendsms = async (req, res) => {
 // =======Destroy previous Mobile OTP adn Stroe new Mobile OTP========
 // ===================================================================
 
-const sendMobileOtp = async (number, otp, dial_code,res) => {
+const sendMobileOtp = async (number, otp, dial_code, res) => {
   let bobo = { "username": number, "otp": otp };
   try {
     var condition = number ? { username: { [Op.like]: number } } : null;
@@ -241,7 +243,7 @@ const sendSmsOtp = async (number, Otp, res) => {
     await axios.get(url)
       .then(function (response) {
         console.log(response.data);
-        return res.status(200).send({status:200, message: 'OTP has been sent on Mobile Number'});
+        return res.status(200).send({ status: 200, message: 'OTP has been sent on Mobile Number' });
       })
       .catch(error => console.log('error', error));
   } catch (error) {
@@ -303,4 +305,42 @@ const generateTRC20Address = () => {
   const account = tronWeb.createAccount();
 
   return account;
+}
+
+
+exports.getPriceOfTokenBYCurrency = async (userid, currency) => {
+  try {
+    
+      let token = await tokens.findAll({});
+      
+      if (token) {
+
+        let userToken = '';
+        for (const item of token) {
+          if (userToken === '') {
+            userToken = item.symbol;
+          }
+          else {
+            if (!userToken.includes(item.token)) {
+              userToken += ',' + item.symbol;
+            }
+          }
+        }
+
+        let url = process.env.PRICECONVERTURL;
+
+        let priceObj = await fetch(url + "fsyms=" + userToken + "&tsyms=" + currency + '&api_key=' + process.env.MIN_API_KEY)
+          .then(response => response.text())
+          .then(result => {
+            return JSON.parse(result);
+          }).catch(error => console.log('error', error));
+
+          return priceObj;
+
+      }
+
+    
+  } catch (error) {
+
+  }
 }

@@ -25,6 +25,7 @@ db.assets = require('./assets.model.js')(sequelize, DataTypes);
 db.tokens = require('./token.model.js')(sequelize, DataTypes);
 db.networks = require('./network.model.js')(sequelize, DataTypes);
 db.kyc = require('./kyc.model.js')(sequelize, DataTypes);
+db.transferhistory = require('./transferhistory.model')(sequelize, DataTypes);
 
 // db.sequelize.sync({ force: true }); 
    
