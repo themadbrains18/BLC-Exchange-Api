@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
+    network:{
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   });
 
   // UserAssets.sync().then(() => {

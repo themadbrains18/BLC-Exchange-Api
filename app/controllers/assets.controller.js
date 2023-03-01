@@ -12,14 +12,13 @@ exports.assetsList = async (req, res) => {
     console.error('===========', error);
   })
 }
-exports.assetsById = async (req, res) => {
-  console.log("========req", req.params.id)
-  assets.findAll({ where: { userID: parseInt(req.params.id) } }).then(async (result) => {
-    if (result) {
+exports.assetsById=async(req,res)=>{
+  assets.findAll({ where: { userID: parseInt(req.params.id) } }).then(async(result)=>{
+    if(result){
       res.status(200).send(result);
     }
-  }).catch((error) => {
-    console.error('===========', error);
+  }).catch((error)=>{
+    console.error('===error2', error);
   })
 }
 
