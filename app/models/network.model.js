@@ -5,11 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
-    confirmations: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    Network: {
+    network: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
@@ -21,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     contractAddress: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    chainId :{
+      type: DataTypes.INTEGER,
+      allowNull: false,
     }
   });
 
