@@ -3,9 +3,11 @@ module.exports = app => {
 
   var router = require("express").Router();
 
-  router.get('/',assets.assetsList)
-  router.get('/:id',assets.assetsById)
-  router.post('/wallettransfer', assets.walletTowalletTranserfer)
+  router.get('/',assets.assetsList);
+  router.get('/:id',assets.assetsById);
+  router.post('/wallettransfer', assets.walletTowalletTranserfer);
+  router.get('/overview/:userid/:currency', assets.assetsOverview);
+  router.get('/history/:userid', assets.transferHistory);
 
   app.use('/api-blc/assets', router);
 };
