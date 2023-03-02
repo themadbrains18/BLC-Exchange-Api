@@ -3,24 +3,27 @@ module.exports = (sequelize, DataTypes) => {
       symbol: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
       },
       tokenName :{
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+      },
+      tokenID :{
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
       withdraw_wallet :{
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
       },
       amount : {
         type : DataTypes.DOUBLE,
         allowNull: false,
       },
       status:{
-        type: DataTypes.BOOLEAN
+        type:   DataTypes.ENUM,
+        values: ['success', 'pending', 'cancel']
+
       },
       user_id: {
         type: DataTypes.STRING,
