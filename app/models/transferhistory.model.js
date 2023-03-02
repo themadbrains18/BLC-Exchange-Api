@@ -1,14 +1,14 @@
 module.exports = (sequelize, DataTypes) => {
-  const UserAssets = sequelize.define("assets", {
+  const TransferAssets = sequelize.define("TransferAssetHistory", {
     userID:{
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    accountType: {
+    from: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    walletType :{
+    to :{
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -19,14 +19,14 @@ module.exports = (sequelize, DataTypes) => {
     balance:{
       type: DataTypes.DOUBLE,
       allowNull: false,
-    }
+    },
   });
 
-  // UserAssets.sync().then(() => {
+  // TransferAssets.sync().then(() => {
   //   console.log('New table created');
   // }).finally(() => {
   //   sequelize.close();
   // })
 
-  return UserAssets;
+  return TransferAssets;
 };
