@@ -344,3 +344,69 @@ exports.getPriceOfTokenBYCurrency = async (userid, currency) => {
 
   }
 }
+exports.createDepositData = async (cid, data, address, coinList, res) => {
+  try {
+    
+    data.map((item) => {
+      let record;
+      if (item.log_events.length > 0) {
+        let tokenData = item.log_events.filter((i) => {
+          let params = i.decoded.params.filter((element) => {
+            return (element.value).toLowerCase() === address.toLowerCase()
+          });
+          if (params.length > 0) {
+            return i
+          }
+        })
+        // console.log(tokenData,'token Data')
+        if (tokenData.length > 0) {
+          if (coinList.includes(tokenData[0]?.sender_contract_ticker_symbol) === true) {
+            record = {
+              "network": cid === 56 || cid === 97 ? "BEP20" : cid === 1 ? "ERC20" : 'TRC20',
+              "tokenName": tokenData[0]?.sender_contract_ticker_symbol,
+              "block_signed_at": tokenData[0]?.block_signed_at,
+              "block_height": tokenData[0]?.block_height,
+              "tx_hash": tokenData[0]?.tx_hash,
+              "successful": true,
+              "from_address": tokenData[0]?.sender_contract_ticker_symbol,
+              "to_address": address.toLowerCase(),
+              "value": tokenData[0].decoded.params[2]?.value / 10 ** tokenData[0]?.sender_contract_decimals,
+              "decimal": tokenData[0]?.sender_contract_decimals
+            }
+          }
+        }
+      }
+      else {
+        record = {
+          "network": cid === 56 || cid === 97 ? "BEP20" : cid === 1 ? "ERC20" : 'TRC20',
+          "tokenName": cid === 56 || cid === 97 ? "BNB" : cid === 1 ? "ETH" : 'TRX',
+          "block_signed_at": item?.block_signed_at,
+          "block_height": item?.block_height,
+          "tx_hash": item?.tx_hash,
+          "tx_offset": item?.tx_offset,
+          "successful": item?.successful,
+          "from_address": item?.from_address,
+          "from_address_label": null,
+          "to_address": (item?.to_address).toLowerCase(),
+          "to_address_label": null,
+          "value": item?.value / 10 ** 18,
+          "value_quote": item?.value_quote,
+          "gas_offered": item?.gas_offered,
+          "gas_spent": item?.gas_spent,
+          "gas_price": item?.gas_price,
+          "fees_paid": item?.fees_paid,
+          "gas_quote": item?.gas_quote,
+          "gas_quote_rate": item?.gas_quote_rate,
+        }
+      }
+      // console.log(record,'record')
+      if (record !== undefined && record.to_address !== undefined && record.to_address === address.toLowerCase()) {
+        trx.push(record);
+      }
+    })
+
+    
+  } catch (error) {
+    console.error(' ===== ', error)
+  }
+}
