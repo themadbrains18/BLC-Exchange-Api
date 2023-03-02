@@ -5,6 +5,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const users = db.users;
 const userOtp = db.userotp;
+const loginDetails = db.loginDetail
 const { Op } = require("sequelize");
 const { storeWalletAddress } = require('./common.controller');
 var generator = require('generate-password');
@@ -16,11 +17,11 @@ const tokenSecret = 'mdb!@#123psd';
 exports.register = async (req, res) => {
   const { email, number, password, dial_code, requestType, referal_code, otp, time } = req.body
   var secret = speakeasy.generateSecret({ length: 20 });
-  var own_refer_code =  generator.generate({
+  var own_refer_code = generator.generate({
     length: 8,
     numbers: true,
     uppercase: true,
-    lowercase : false
+    lowercase: false
   });
   try {
     let ifUser;
@@ -134,10 +135,16 @@ const emailLogin = (username, password, req, res, next) => {
           }
           return req.logIn(user, async (loginErr) => {
             if (loginErr) { console.log(loginErr); return res.sendStatus(401); }
-            token = jwt.sign({ id: user.id }, tokenSecret, { expiresIn: '5h' });
-            let session = req.session;
-            session.token = token;
-            return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+            if (user) {
+
+              token = jwt.sign({ id: user.id }, tokenSecret, { expiresIn: '5h' });
+              let result = saveLoginDetails(user.id)
+              let session = req.session;
+              session.token = token;
+              return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+
+            }
+
           })
         })(req, res, next);
       } catch (error) {
@@ -165,10 +172,13 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
           if (!user) {
             return res.send({ status: 401, message: "Number and password not matched!." });
           }
-          token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
-          let session = req.session;
-          session.token = token;
-          return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+          let result = await saveLoginDetails(user)
+          if (result) {
+            token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
+            let session = req.session;
+            session.token = token;
+            return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+          }
         })(req, res, next);
       }
       else {
@@ -229,7 +239,13 @@ exports.userAuthenticate = async (req, res) => {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, data: result })
+        await loginDetails.findOne({ where: { user_id: result.id } }).then((detail) => {
+          if (detail) {
+            console.log(detail, '==========i am here ');
+            res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
+          }
+        })
+        
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -258,7 +274,7 @@ exports.userAuthenticate = async (req, res) => {
 // ====update user Request Login user ================
 // ===================================================================
 exports.updateUser = (req, res) => {
-  console.log(req.body)
+
   try {
     users.findOne({ where: { id: req.body.id } }).then((record) => {
       if (record) {
@@ -329,11 +345,44 @@ exports.updatePassword = async (req, res) => {
   })
 
 }
+// ===================================================================
+// ====user Login Details update Request Login user ================
+// ===================================================================
+
+const saveLoginDetails = async (id) => {
+  loginDetails.findOne({ where: { user_id: id } }).then((userDetail) => {
+    if (userDetail) {
+      userDetail.update({ loginTime: Date.now(), lastLogin: userDetail.loginTime }).then((updateRecord) => {
+        if (updateRecord) {
+          return updateRecord
+        }
+      }).catch((error) => {
+        console.log("=====error1", error)
+      })
+    }
+
+    else {
+      console.log("====2")
+      data = loginDetails.create({ user_id: id, loginTime: Date.now(), lastLogin: Date.now() }).then((updateRecord) => {
+        if (updateRecord) {
+          return updateRecord
+        }
+      }).catch((error) => {
+        console.log("=====error2", error)
+      })
+    }
+
+  }).catch((error) => {
+    console.error('====', error);
+
+  })
+
+}
 
 // ===================================================================
 // ====user password confirm matched ================
 // ===================================================================
-exports.confirmPassword = async (req,res) => {
+exports.confirmPassword = async (req, res) => {
   const { oldpassword } = req.body;
 
   var isValidPassword = function (userpass, password) {
@@ -357,7 +406,7 @@ exports.confirmPassword = async (req,res) => {
 // ===================================================================
 // ====user fund code confirm matched ================
 // ===================================================================
-exports.confirmFuncode = async (req,res) => {
+exports.confirmFuncode = async (req, res) => {
   const { oldcode } = req.body;
 
   users.findOne({ where: { id: req.body.id } }).then((user) => {
@@ -378,37 +427,37 @@ exports.confirmFuncode = async (req,res) => {
 // ===================================================================
 // ====user delete confirm matched ================
 // ===================================================================
-exports.removeUser=async(req,res)=>{
+exports.removeUser = async (req, res) => {
   console.log(req.params.id)
   try {
-    await users.destroy({ where: { id: parseInt(req.params.id) } }).then((remove)=>{
-      if(remove){
-        res.send({status : 200, message : 'Account delete successfully.You have not access this account before again created.'})
+    await users.destroy({ where: { id: parseInt(req.params.id) } }).then((remove) => {
+      if (remove) {
+        res.send({ status: 200, message: 'Account delete successfully.You have not access this account before again created.' })
       }
-      else{
-        res.send({status : 200, message : 'No account found'})
+      else {
+        res.send({ status: 200, message: 'No account found' })
       }
-    }).catch((error)=>{
-      res.send({status :500, data:error});
+    }).catch((error) => {
+      res.send({ status: 500, data: error });
     });
   } catch (error) {
-    res.send({status :500, data:error});
+    res.send({ status: 500, data: error });
   }
 }
 
-exports.depositAddress=async(req,res)=>{
+exports.depositAddress = async (req, res) => {
   try {
-    users.findOne({where : {id : req.params.id}}).then((user)=>{
-      if(user){
+    users.findOne({ where: { id: req.params.id } }).then((user) => {
+      if (user) {
         let address = req.params.type === 'bep20' ? user.bep20Address : req.params.type === 'erc20' ? user.bep20Address : user.trc20Address;
         console.log(address);
-        res.send({status : 200, deposit_address : address})
+        res.send({ status: 200, deposit_address: address })
       }
-    }).catch((error)=>{
+    }).catch((error) => {
       console.error('=========', error);
-      res.send({status : 500, data : error});
+      res.send({ status: 500, data: error });
     })
   } catch (error) {
-    
+
   }
 }
