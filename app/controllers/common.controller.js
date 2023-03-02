@@ -344,3 +344,38 @@ exports.getPriceOfTokenBYCurrency = async (userid, currency) => {
 
   }
 }
+
+
+exports.createTRXDepositData=async(data, address)=>{
+  
+  const fullNode = process.env.TRONURL;
+  const solidityNode = process.env.TRONURL;
+  const eventServer = process.env.TRONURL;
+  const privateKey = process.env.TRONKEY;
+  const tronWeb = new TronWeb(fullNode,solidityNode,eventServer,privateKey);
+
+  const addressBase58 = tronWeb.address.toHex(address)
+  let trx=[];
+  data.map((item) => {
+    let record;
+    
+    if(item.raw_data!=undefined && item.raw_data.contract[0].parameter.value.to_address!=undefined && item.raw_data.contract[0].parameter.value.to_address!=false){
+      
+      if(item.raw_data.contract[0].parameter.value.to_address === addressBase58){
+        record = {
+          "network": 'TRC20',
+          "tokenName": 'TRX',
+          "block_signed_at": moment(item?.block_timestamp),
+          "block_height": item?.blockNumber,
+          "tx_hash": item?.txID,
+          "from_address": tronWeb.address.fromHex(item.raw_data.contract[0].parameter.value.owner_address),
+          "to_address": item.raw_data.contract[0].parameter.value.to_address,
+          "value": item.raw_data.contract[0].parameter.value.amount / 10**6,
+          "successful": true,
+        }
+        trx.push(record);
+      }
+    }
+  })
+  return trx;
+}
