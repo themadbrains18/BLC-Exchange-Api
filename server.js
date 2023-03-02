@@ -123,6 +123,7 @@ require("./app/routes/assets.routes")(app);
 require("./app/routes/kyc.routes")(app);
 require("./app/routes/network.routes")(app);
 require("./app/routes/withdraw.routes")(app);
+require("./app/routes/deposit.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;

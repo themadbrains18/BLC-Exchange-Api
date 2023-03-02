@@ -19,6 +19,8 @@ const decipher = crypto.createDecipheriv(algorithm, Securitykey, initVector);
 
 const userOtp = db.userotp;
 const users = db.users;
+const tokens = db.tokens;
+const assets = db.assets;
 
 const { SMTP_SECURE, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER, web3Provider } = require('../config/db.config.js');
 console.log(SMTP_USER, '====SMTP_USER')
@@ -67,7 +69,7 @@ exports.match = async (req, res) => {
   const { username, otp, time } = req.body;
   var otpCondition = username ? { [Op.and]: [{ username: username }, { otp: otp }] } : null;
   userOtp.findOne({ where: otpCondition }).then(async (result) => {
-    console.log(result,'======result')
+    console.log(result, '======result')
     if (result) {
       let addMin = 5;
       if (new Date(result.createdAt).getTime() + addMin * 60000 > new Date(time).getTime()) {
@@ -158,7 +160,7 @@ const sendOtpEmail = async (email, otp, res) => {
         return { status: 500, message: err.message };
       } else {
         console.log('=======step 7====')
-        res.status(200).send({ status:200, message: "Otp Sent" });
+        res.status(200).send({ status: 200, message: "Otp Sent" });
       }
 
     })
@@ -188,7 +190,7 @@ exports.sendsms = async (req, res) => {
 // =======Destroy previous Mobile OTP adn Stroe new Mobile OTP========
 // ===================================================================
 
-const sendMobileOtp = async (number, otp, dial_code,res) => {
+const sendMobileOtp = async (number, otp, dial_code, res) => {
   let bobo = { "username": number, "otp": otp };
   try {
     var condition = number ? { username: { [Op.like]: number } } : null;
@@ -241,7 +243,7 @@ const sendSmsOtp = async (number, Otp, res) => {
     await axios.get(url)
       .then(function (response) {
         console.log(response.data);
-        return res.status(200).send({status:200, message: 'OTP has been sent on Mobile Number'});
+        return res.status(200).send({ status: 200, message: 'OTP has been sent on Mobile Number' });
       })
       .catch(error => console.log('error', error));
   } catch (error) {
@@ -303,4 +305,168 @@ const generateTRC20Address = () => {
   const account = tronWeb.createAccount();
 
   return account;
+}
+
+
+exports.getPriceOfTokenBYCurrency = async (userid, currency) => {
+  try {
+    
+      let token = await tokens.findAll({});
+      
+      if (token) {
+
+        let userToken = '';
+        for (const item of token) {
+          if (userToken === '') {
+            userToken = item.symbol;
+          }
+          else {
+            if (!userToken.includes(item.token)) {
+              userToken += ',' + item.symbol;
+            }
+          }
+        }
+
+        let url = process.env.PRICECONVERTURL;
+
+        let priceObj = await fetch(url + "fsyms=" + userToken + "&tsyms=" + currency + '&api_key=' + process.env.MIN_API_KEY)
+          .then(response => response.text())
+          .then(result => {
+            return JSON.parse(result);
+          }).catch(error => console.log('error', error));
+
+          return priceObj;
+
+      }
+
+    
+  } catch (error) {
+
+  }
+}
+
+exports.createDepositData = async (cid, data, address, coinList, res) => {
+  try {
+    let trx = [];
+    data.map((item) => {
+      let record;
+      if (item.log_events.length > 0) {
+        let tokenData = item.log_events.filter((i) => {
+          let params = i.decoded.params.filter((element) => {
+            return (element.value).toLowerCase() === address.toLowerCase()
+          });
+          if (params.length > 0) {
+            return i
+          }
+        })
+        // console.log(tokenData,'token Data')
+        if (tokenData.length > 0) {
+          if (coinList.includes(tokenData[0]?.sender_contract_ticker_symbol) === true) {
+            record = {
+              "network": cid === 56 || cid === 97 ? "BEP20" : cid === 1 ? "ERC20" : 'TRC20',
+              "tokenName": tokenData[0]?.sender_contract_ticker_symbol,
+              "block_signed_at": tokenData[0]?.block_signed_at,
+              "block_height": tokenData[0]?.block_height,
+              "tx_hash": tokenData[0]?.tx_hash,
+              "successful": true,
+              "from_address": tokenData[0]?.sender_contract_ticker_symbol,
+              "to_address": address.toLowerCase(),
+              "value": tokenData[0].decoded.params[2]?.value / 10 ** tokenData[0]?.sender_contract_decimals,
+              "decimal": tokenData[0]?.sender_contract_decimals
+            }
+          }
+        }
+      }
+      else {
+        record = {
+          "network": cid === 56 || cid === 97 ? "BEP20" : cid === 1 ? "ERC20" : 'TRC20',
+          "tokenName": cid === 56 || cid === 97 ? "BNB" : cid === 1 ? "ETH" : 'TRX',
+          "block_signed_at": item?.block_signed_at,
+          "block_height": item?.block_height,
+          "tx_hash": item?.tx_hash,
+          "tx_offset": item?.tx_offset,
+          "successful": item?.successful,
+          "from_address": item?.from_address,
+          "from_address_label": null,
+          "to_address": (item?.to_address).toLowerCase(),
+          "to_address_label": null,
+          "value": item?.value / 10 ** 18,
+          "value_quote": item?.value_quote,
+          "gas_offered": item?.gas_offered,
+          "gas_spent": item?.gas_spent,
+          "gas_price": item?.gas_price,
+          "fees_paid": item?.fees_paid,
+          "gas_quote": item?.gas_quote,
+          "gas_quote_rate": item?.gas_quote_rate,
+        }
+      }
+      // console.log(record,'record')
+      if (record !== undefined && record.to_address !== undefined && record.to_address === address.toLowerCase()) {
+        trx.push(record);
+      }
+    })
+
+    return trx;
+    
+  } catch (error) {
+    console.error(' ===== ', error)
+  }
+}
+
+
+exports.createTRXDepositData=async(data, address)=>{
+  
+  const fullNode = process.env.TRONURL;
+  const solidityNode = process.env.TRONURL;
+  const eventServer = process.env.TRONURL;
+  const privateKey = process.env.TRONKEY;
+  const tronWeb = new TronWeb(fullNode,solidityNode,eventServer,privateKey);
+
+  const addressBase58 = tronWeb.address.toHex(address)
+  let trx=[];
+  data.map((item) => {
+    let record;
+    
+    if(item.raw_data!=undefined && item.raw_data.contract[0].parameter.value.to_address!=undefined && item.raw_data.contract[0].parameter.value.to_address!=false){
+      
+      if(item.raw_data.contract[0].parameter.value.to_address === addressBase58){
+        record = {
+          "network": 'TRC20',
+          "tokenName": 'TRX',
+          "block_signed_at": moment(item?.block_timestamp),
+          "block_height": item?.blockNumber,
+          "tx_hash": item?.txID,
+          "from_address": tronWeb.address.fromHex(item.raw_data.contract[0].parameter.value.owner_address),
+          "to_address": item.raw_data.contract[0].parameter.value.to_address,
+          "value": item.raw_data.contract[0].parameter.value.amount / 10**6,
+          "successful": true,
+        }
+        trx.push(record);
+      }
+    }
+  })
+  return trx;
+}
+
+exports.createTRC20DepositData=async(data, address, coinList)=>{
+  
+  let trx=[];
+  data.map((item) => {
+    let record;
+    if (coinList.includes(item?.token_info.symbol) === true && item?.to === address){
+      record = {
+        "network": 'TRC20',
+        "tokenName": item?.token_info.symbol,
+        "block_signed_at": moment(item?.block_timestamp),
+        "block_height": 0000,
+        "tx_hash": item?.transaction_id,
+        "from_address": item?.from,
+        "to_address": item?.to,
+        "value": item?.value / 10**item?.token_info.decimals,
+        "successful": true,
+      }
+      trx.push(record);
+    }
+  })
+  return trx;
 }
