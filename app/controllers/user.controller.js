@@ -234,7 +234,6 @@ exports.checkUser = async (req, res) => {
 // ===================================================================
 exports.userAuthenticate = async (req, res) => {
   const { email, number, dial_code } = req.body;
-
   if (email !== '') {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
@@ -245,7 +244,6 @@ exports.userAuthenticate = async (req, res) => {
             res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
           }
         })
-        
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -258,7 +256,12 @@ exports.userAuthenticate = async (req, res) => {
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, data: result })
+        await loginDetails.findOne({ where: { user_id: result.id } }).then((detail) => {
+          if (detail) {
+            console.log(detail, '==========i am here 2 ');
+            res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
+          }
+        })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -267,9 +270,7 @@ exports.userAuthenticate = async (req, res) => {
       console.error('===', error);
     })
   }
-
 }
-
 // ===================================================================
 // ====update user Request Login user ================
 // ===================================================================
