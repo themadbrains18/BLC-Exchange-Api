@@ -257,7 +257,6 @@ exports.userAuthenticate = async (req, res) => {
       if (result) {
         await loginDetails.findOne({ where: { user_id: result.id } }).then((detail) => {
           if (detail) {
-            console.log(detail, '==========i am here 2 ');
             res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
 
           }
