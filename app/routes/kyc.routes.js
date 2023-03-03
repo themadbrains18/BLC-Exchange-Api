@@ -6,6 +6,6 @@ module.exports = app => {
     router.post("/create", kyc.create);
 
   
-    app.use('/api-blc/kyc', router);
+    app.use('/api/kyc', router);
   };
   
