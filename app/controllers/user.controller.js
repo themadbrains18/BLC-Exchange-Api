@@ -172,13 +172,12 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
           if (!user) {
             return res.send({ status: 401, message: "Number and password not matched!." });
           }
-          let result = await saveLoginDetails(user)
-          if (result) {
+          let result = await saveLoginDetails(user.id)
+
             token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
             let session = req.session;
             session.token = token;
             return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
-          }
         })(req, res, next);
       }
       else {
@@ -260,6 +259,7 @@ exports.userAuthenticate = async (req, res) => {
           if (detail) {
             console.log(detail, '==========i am here 2 ');
             res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
+
           }
         })
       }
