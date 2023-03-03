@@ -9,5 +9,5 @@ module.exports = app => {
   router.get('/overview/:userid/:currency', assets.assetsOverview);
   router.get('/history/:userid', assets.transferHistory);
 
-  app.use('/api-blc/assets', router);
+  app.use('/api/assets', router);
 };

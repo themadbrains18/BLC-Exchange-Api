@@ -9,7 +9,7 @@ module.exports = app => {
     router.get('/list/:userid', withdrawListbyTekenAndUserID);
 
     // how get list order by group in mysql?
-    app.use("/api-blc/withdraw",router)
+    app.use("/api/withdraw",router)
    
 };
   

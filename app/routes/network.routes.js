@@ -5,5 +5,5 @@ module.exports = app => {
 
   router.get('/',networks.networkAll);
 
-  app.use('/api-blc/network', router);
+  app.use('/api/network', router);
 };
