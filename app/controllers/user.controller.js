@@ -362,7 +362,6 @@ const saveLoginDetails = async (id) => {
     }
 
     else {
-      console.log("====2")
       data = loginDetails.create({ user_id: id, loginTime: Date.now(), lastLogin: Date.now() }).then((updateRecord) => {
         if (updateRecord) {
           return updateRecord
