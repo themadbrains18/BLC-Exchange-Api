@@ -172,13 +172,12 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
           if (!user) {
             return res.send({ status: 401, message: "Number and password not matched!." });
           }
-          let result = await saveLoginDetails(user)
-          if (result) {
+          let result = await saveLoginDetails(user.id)
+
             token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
             let session = req.session;
             session.token = token;
             return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
-          }
         })(req, res, next);
       }
       else {
@@ -234,7 +233,6 @@ exports.checkUser = async (req, res) => {
 // ===================================================================
 exports.userAuthenticate = async (req, res) => {
   const { email, number, dial_code } = req.body;
-
   if (email !== '') {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
@@ -245,7 +243,6 @@ exports.userAuthenticate = async (req, res) => {
             res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
           }
         })
-        
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -258,7 +255,13 @@ exports.userAuthenticate = async (req, res) => {
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
       if (result) {
-        res.send({ status: 200, data: result })
+        await loginDetails.findOne({ where: { user_id: result.id } }).then((detail) => {
+          if (detail) {
+            console.log(detail, '==========i am here 2 ');
+            res.send({ status: 200, data: result, lastLogin : detail.lastLogin })
+
+          }
+        })
       }
       else {
         res.send({ status: 404, message: 'User Not Exist' })
@@ -267,9 +270,7 @@ exports.userAuthenticate = async (req, res) => {
       console.error('===', error);
     })
   }
-
 }
-
 // ===================================================================
 // ====update user Request Login user ================
 // ===================================================================
@@ -362,7 +363,6 @@ const saveLoginDetails = async (id) => {
     }
 
     else {
-      console.log("====2")
       data = loginDetails.create({ user_id: id, loginTime: Date.now(), lastLogin: Date.now() }).then((updateRecord) => {
         if (updateRecord) {
           return updateRecord

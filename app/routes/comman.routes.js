@@ -8,5 +8,5 @@ module.exports = app => {
   router.post("/phone", common.sendsms);
   router.post("/match", common.match);
 
-  app.use('/api-blc/otp', router);
+  app.use('/api/otp', router);
 };

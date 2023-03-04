@@ -7,7 +7,7 @@ module.exports = app => {
     router.post('/saveTrx',saveTRXTransaction)
     router.post('/saveTrc20',saveTRC20Transaction)
 
-    app.use("/api-blc/deposit",router)
+    app.use("/api/deposit",router)
    
 };
   

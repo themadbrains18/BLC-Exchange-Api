@@ -13,10 +13,9 @@ module.exports = {
   SMTP_HOST: "smtp.gmail.com",
   SMTP_PORT: '587',
   SMTP_SECURE_TYPE: 'Tls',
-  SMTP_USER: 'blcexchange.net@gmail.com',// 'blcexchange.net@gmail.com',
-  SMTP_PASSWORD: 'yeaqfufvtyybzggm',// 'yeaqfufvtyybzggm',
+  SMTP_USER: 'surinderdhanjufss@gmail.com',// 'blcexchange.net@gmail.com',
+  SMTP_PASSWORD: 'tlcpjxgdnomhcwyh',// 'yeaqfufvtyybzggm',
   
-
 
 };
 

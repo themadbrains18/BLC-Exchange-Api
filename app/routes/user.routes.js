@@ -15,5 +15,5 @@ module.exports = app => {
   router.delete('/delete/:id', users.removeUser);
   router.get('/address/:id/:type', users.depositAddress);
 
-  app.use('/api-blc/users', router);
+  app.use('/api/users', router);
 };
