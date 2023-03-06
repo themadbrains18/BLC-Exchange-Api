@@ -23,7 +23,7 @@ var corsOptions = {
 
 };
 
-app.get('/api-blc',(req,res)=>{
+app.get('/api',(req,res)=>{
   res.send('Hello Welcome BLC API')
 })
 
