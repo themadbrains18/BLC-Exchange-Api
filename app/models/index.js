@@ -31,7 +31,8 @@ db.transferhistory = require('./transferhistory.model')(sequelize, DataTypes);
 db.loginDetail = require('./loginDetails.model')(sequelize, DataTypes);
 
 db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
+db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.withdraws.sync({ force: true }); 
+//  db.paymentmethod.sync({ force: true }); 
    
 module.exports = db;
