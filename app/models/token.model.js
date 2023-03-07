@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     symbol: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: false
     },
     fullName :{
       type: DataTypes.STRING,
@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     address :{
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: false
     },
     minimum_withdraw : {
       type : DataTypes.DOUBLE,

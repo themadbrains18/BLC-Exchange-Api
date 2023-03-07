@@ -8,5 +8,7 @@ module.exports = app => {
   router.get('/',tokens.tokenAll);
   router.get('/balances/:id', getBlanceByuserID);
 
+  router.get('/marketcoin',tokens.getMarketCoin)
+
   app.use('/api/token', router);
 };
