@@ -2,62 +2,52 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-    const Kyc = sequelize.define("kyc",
+    const Post = sequelize.define("post",
         {
             user_id: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            country: {
+            token: {
                 type: DataTypes.STRING,
                 defaultValue: ''
             },
-            name: {
-                type: DataTypes.STRING,
+            price: {
+                type: DataTypes.DOUBLE,
                 allowNull: false,
             },
-            lname: {
-                type: DataTypes.STRING,
+            quantity: {
+                type: DataTypes.DOUBLE,
                 allowNull: false,
             },
-            doctype: {
-                type: DataTypes.STRING,
+            min_limit: {
+                type: DataTypes.DOUBLE,
                 allowNull: false
             },
-            docnumber: {
-                type: DataTypes.STRING,
+            max_limit: {
+                type: DataTypes.DOUBLE,
                 allowNull: false
             },
-            dob: {
-                type: DataTypes.DATE
-            },
-            idfront: {
+            p_method: {
                 type: DataTypes.STRING
             },
-            idback: {
+            payment_time: {
                 type: DataTypes.STRING
             },
-            statement: {
+            notes: {
                 type: DataTypes.STRING
             },
-            createdAt: {
-                type: DataTypes.DATE
-            },
-            updatedAt: {
-                type: DataTypes.DATE
-            },
-            isVerified : {
-                type: DataTypes.BOOLEAN,
-                defaultValue: false,
+            checked: {
+                type: DataTypes.BOOLEAN
             }
         },
 
     );
-    // Kyc.sync().then(() => {
+    // Post.sync().then(() => {
     //     console.log('New table created');
     //   }).finally(() => {
     //     sequelize.close();
     //   })
 
-    return Kyc;
+    return Post;
 };
