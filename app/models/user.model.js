@@ -71,6 +71,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             updatedAt: {
                 type: DataTypes.DATE
+            },
+            UID : {
+                type : DataTypes.INTEGER,
+                allowNull: false,
             }
         },
 
