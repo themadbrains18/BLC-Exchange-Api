@@ -24,6 +24,13 @@ exports.register = async (req, res) => {
     uppercase: true,
     lowercase: false
   });
+
+  var uuid = generator.generate({
+    length: 8,
+    numbers: true,
+    uppercase: false,
+    lowercase: false
+  });
   try {
     let ifUser;
 
@@ -43,7 +50,7 @@ exports.register = async (req, res) => {
               else {
                 let bcryptPassword = bcrypt.hashSync(password, 12);
 
-                users.create({ email: email, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret) }).then(async (data) => {
+                users.create({ email: email, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret), UID : uuid }).then(async (data) => {
                   if (data) {
                     // console.log(data)
                     setTimeout(() => {
@@ -66,7 +73,7 @@ exports.register = async (req, res) => {
               }
               else {
                 let bcryptPassword = bcrypt.hashSync(password, 12); //bcrypt random password that store in DB
-                users.create({ number: number, dial_code: dial_code, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret) }).then(async (data) => {
+                users.create({ number: number, dial_code: dial_code, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret),UID : uuid }).then(async (data) => {
                   if (data) {
                     // console.log(data)
                     setTimeout(() => {
@@ -142,7 +149,9 @@ const emailLogin = (username, password, req, res, next) => {
               let result = saveLoginDetails(user.id)
               let session = req.session;
               session.token = token;
-              return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+              return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, 
+                number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA,
+                 kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code,UID : user.UID });
 
             }
 
@@ -178,7 +187,10 @@ const mobileLogin = (username, password, dial_code, req, res, next) => {
             token = jwt.sign({ _id: user._id }, tokenSecret, { expiresIn: '5h' });
             let session = req.session;
             session.token = token;
-            return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code });
+            
+            return res.send({ status: 200, id: user.id, auth: true, username: user.username, registerType: user.registerType, 
+              number: user.number, dial_code: user.dial_code, email: user.email, access_token: token, secutiryFA: user.TwoFA, 
+              kycStatus: user.kycstatus, tradePassword: user.tradingPassword, secret: user.secret, own_code: user.own_code,UID : user.UID  });
         })(req, res, next);
       }
       else {
@@ -350,6 +362,7 @@ exports.updatePassword = async (req, res) => {
   })
 
 }
+
 // ===================================================================
 // ====user Login Details update Request Login user ================
 // ===================================================================
@@ -465,3 +478,36 @@ exports.depositAddress = async (req, res) => {
 
   }
 }
+
+exports.userExist = async (req, res) => {
+  const { username, dial_code, requestType } = req.body;
+  if (requestType !== 'mobile') {
+    var condition = username ? { email: { [Op.like]: username } } : null;
+    users.findOne({ where: condition }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'This email does not exist. Please enter the correct one.' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+  else {
+    console.log(dial_code,'=====here dial code')
+    var condition = username ? { [Op.and]: [{ number: username }, { dial_code: dial_code }] } : null;
+    users.findOne({ where: condition }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'This phone number does not exist. Please enter the correct one.' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+
+}
+
