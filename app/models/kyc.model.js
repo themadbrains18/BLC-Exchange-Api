@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             updatedAt: {
                 type: DataTypes.DATE
+            },
+            isVerified : {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
             }
         },
 

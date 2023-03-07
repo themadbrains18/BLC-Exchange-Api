@@ -34,6 +34,6 @@ db.posts = require('./post.model.js')(sequelize, DataTypes);
 db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.tokens.sync({ force: true }); 
+//  db.kyc.sync({ force: true }); 
    
 module.exports = db;
