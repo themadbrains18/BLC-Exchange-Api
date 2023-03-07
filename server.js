@@ -10,6 +10,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const db = require("./app/models");
 const users = db.users;
 const { Op } = require("sequelize");
+const cron = require("node-cron");
 
 const app = express();
 
@@ -125,6 +126,14 @@ require("./app/routes/network.routes")(app);
 require("./app/routes/withdraw.routes")(app);
 require("./app/routes/deposit.routes")(app);
 require("./app/routes/paymentmethod.routes")(app);
+require("./app/routes/marketorder.routes")(app);
+
+const { cronMarketBuySell } = require('./app/controllers/marketorder.controller.js');
+
+cron.schedule("*/30 * * * * *", function() {
+  console.log('cron');
+  cronMarketBuySell()
+});
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
