@@ -32,7 +32,8 @@ db.loginDetail = require('./loginDetails.model')(sequelize, DataTypes);
 
 db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
+db.userpaymentmethod = require('./users_payment_methods.model.js')(sequelize, DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.paymentmethod.sync({ force: true }); 
+//  db.users.sync({ force: true }); 
    
 module.exports = db;
