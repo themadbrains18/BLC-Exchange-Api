@@ -35,6 +35,6 @@ db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
 db.marketorder = require('./marketorder.model.js')(sequelize,DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.kyc.sync({ force: true }); 
+//  db.users.sync({ force: true }); 
    
 module.exports = db;
