@@ -29,7 +29,8 @@ exports.kycAll = async (req, res) => {
                     idback: k.idback,
                     statement: k.statement,
                     email: user[0].email,
-                    status:user[0].kycstatus,
+                    status: user[0].kycstatus,
+                    isVerified: k.isVerified,
                     user_id: user[0].id
                 }
                 record.push(obj);
@@ -43,21 +44,48 @@ exports.kycAll = async (req, res) => {
 }
 
 exports.kycUpdate = async (req, res) => {
+    console.log("=========req,", req.body.status)
     try {
+        
         await user.findOne({ where: { id: parseInt(req.params.id) } }).then(async (users) => {
             if (users) {
-                console.log("=============users", users)
+                if(req.body.status === 'success'){
+                    await users.update({ kycstatus: req.body.status }).then(async (updateRecord) => {
+                        await db.kyc.update({ isVerified: true }, { where: { user_id: parseInt(req.params.id) } })
+    
+                        let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
+    
+                        return res.send({ status: 200, data: newReocrd });
+                    })
+                }
+                if(req.body.status === 'reject'){
+                    await users.update({ kycstatus: 'pending'}).then(async (updateRecord) => {
+                        await db.kyc.destroy ({ where: { user_id: parseInt(req.params.id) } })
+    
+                        let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
+    
+                        return res.send({ status: 200, data: newReocrd });
+                    })
+                }
+              
+                    //    if (updateRecord) {
+
+                    // .then((record)=>{
 
 
-                await users.update({ kycstatus: req.body.status }).then((updateRecord) => {
-                    db.kyc.update({isVerified : true},{ where : {user_id : parseInt(req.params.id) }})
+                    //     if(record){
+                    //         console.log("record",record)
 
-                    if (updateRecord) {
-                        return res.send({ status: 200, data: updateRecord });
-                    }
-                }).catch((e) => {
-                    console.log("=========error", e)
-                })
+                    //         if (updateRecord) {
+                    //             return res.send({ status: 200, data: updateRecord });
+                    //         }
+                    //     }
+             
+
+
+                // }).catch((e) => {
+                //     console.log("=========error", e)
+                // })
             }
         }).catch((e) => {
             console.log("==========e", e)
