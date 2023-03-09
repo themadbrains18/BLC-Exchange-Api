@@ -38,6 +38,11 @@ module.exports = (sequelize, DataTypes) => {
     networks : {
       type : DataTypes.STRING,
       allowNull: false,
+    },
+    price :{
+      type : DataTypes.DOUBLE,
+      allowNull : false,
+      default : 0.00
     }
   });
 

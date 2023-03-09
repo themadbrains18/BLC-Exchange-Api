@@ -25,13 +25,6 @@ exports.assetsById=async(req,res)=>{
 
   const results = await db.sequelize.query('select * from assets as asset inner join tokens as token where asset.token_id = token.id and asset.userID='+req.params.id);
   res.status(200).send(results[0]);
-  // assets.findAll({ where: { userID: parseInt(req.params.id) } }).then(async(result)=>{
-  //   if(result){
-  //     res.status(200).send(result);
-  //   }
-  // }).catch((error)=>{
-  //   console.error('===error2', error);
-  // })
 }
 
 /**
