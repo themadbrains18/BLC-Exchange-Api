@@ -49,7 +49,7 @@ exports.kycUpdate = async (req, res) => {
         
         await user.findOne({ where: { id: parseInt(req.params.id) } }).then(async (users) => {
             if (users) {
-                if(req.body.status === 'success'){
+                // if(req.body.status === 'success'){
                     await users.update({ kycstatus: req.body.status }).then(async (updateRecord) => {
                         await db.kyc.update({ isVerified: true }, { where: { user_id: parseInt(req.params.id) } })
     
@@ -57,16 +57,16 @@ exports.kycUpdate = async (req, res) => {
     
                         return res.send({ status: 200, data: newReocrd });
                     })
-                }
-                if(req.body.status === 'reject'){
-                    await users.update({ kycstatus: 'pending'}).then(async (updateRecord) => {
-                        await db.kyc.destroy ({ where: { user_id: parseInt(req.params.id) } })
+                // }
+                // if(req.body.status === 'reject'){
+                //     await users.update({ kycstatus: 'pending'}).then(async (updateRecord) => {
+                //         await db.kyc.destroy ({ where: { user_id: parseInt(req.params.id) } })
     
-                        let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
+                //         let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
     
-                        return res.send({ status: 200, data: newReocrd });
-                    })
-                }
+                //         return res.send({ status: 200, data: newReocrd });
+                //     })
+                // }
               
                     //    if (updateRecord) {
 
