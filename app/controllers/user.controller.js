@@ -226,6 +226,7 @@ exports.checkUser = async (req, res) => {
     })
   }
   else {
+    console.log(dial_code,'=====here dial code')
     var condition = number ? { [Op.and]: [{ number: number }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
@@ -250,8 +251,10 @@ exports.userAuthenticate = async (req, res) => {
     var condition = email ? { email: { [Op.like]: email } } : null;
     users.findOne({ where: condition, attributes: { exclude: ['createdAt', 'updatedAt', 'passwordHash', 'bep20Address', 'trc20Address', 'bep20Hashkey', 'trc20Hashkey'] } }).then(async (result) => {
       if (result) {
-        await loginDetails.findOne({ where: { user_id: result.id } }).then((detail) => {
+        await loginDetails.findOne({ where: { user_id: result.id } }).then(async(detail) => {
           if (detail) {
+            // let result =  await fetch("https://api.ipregistry.co/?key=kudsv65pr7068fv5") .then(response => response.text())
+            // console.log("=========result", result)
             let date = moment(detail.lastLogin).format('MMMM Do YYYY, h:mm:ss a');
             res.send({ status: 200, data: result, lastLogin : date });
           }
@@ -359,6 +362,7 @@ exports.updatePassword = async (req, res) => {
   })
 
 }
+
 // ===================================================================
 // ====user Login Details update Request Login user ================
 // ===================================================================
@@ -474,3 +478,36 @@ exports.depositAddress = async (req, res) => {
 
   }
 }
+
+exports.userExist = async (req, res) => {
+  const { username, dial_code, requestType } = req.body;
+  if (requestType !== 'mobile') {
+    var condition = username ? { email: { [Op.like]: username } } : null;
+    users.findOne({ where: condition }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'This email does not exist. Please enter the correct one.' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+  else {
+    console.log(dial_code,'=====here dial code')
+    var condition = username ? { [Op.and]: [{ number: username }, { dial_code: dial_code }] } : null;
+    users.findOne({ where: condition }).then(async (result) => {
+      if (result) {
+        res.send({ status: 200, data: result })
+      }
+      else {
+        res.send({ status: 404, message: 'This phone number does not exist. Please enter the correct one.' })
+      }
+    }).catch((error) => {
+      console.error('===', error);
+    })
+  }
+
+}
+

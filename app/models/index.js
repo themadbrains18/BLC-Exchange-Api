@@ -30,6 +30,7 @@ db.deposit = require('./deposit.model.js')(sequelize, DataTypes);
 db.transferhistory = require('./transferhistory.model')(sequelize, DataTypes);
 db.loginDetail = require('./loginDetails.model')(sequelize, DataTypes);
 
+db.posts = require('./post.model.js')(sequelize, DataTypes);
 db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
 //  db.sequelize.sync({ force: true }); 

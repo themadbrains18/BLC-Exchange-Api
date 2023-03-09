@@ -240,8 +240,33 @@ const saveTRC20Transaction = async (req, res) => {
   }
 
 
+const getdepositDetails = async(req,res) =>{
+    const userId= req.params.id
+    try{
+        let depositAddress=[]
+        depositAddress= await Users.findOne({where:{id:userId}}).then((result) => {
+            if (result) {
+                return result.bep20Address;
+            }
+        })
+          await Deposit.findAll({where:{address: depositAddress }}).then((result)=>{
+                if(result){
+                    return res.send({ status: 200, data:result })
+                }
+              }).catch((error)=>{
+                console.error('===========', error);
+              })
+        }
+        
+    
+    catch(error){
+
+    }
+}
+
 module.exports = {
     saveTransaction,
     saveTRXTransaction,
-    saveTRC20Transaction
+    saveTRC20Transaction,
+    getdepositDetails
 }
