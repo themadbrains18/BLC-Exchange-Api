@@ -39,8 +39,8 @@ module.exports = (sequelize, DataTypes) => {
             },
             kycstatus: {
                 type: DataTypes.ENUM,
-                values: ['success', 'pending', 'reject'],
-                allowNull: true
+                values: ['NA','success', 'pending', 'reject'],
+                allowNull: true,
             },
             tradingPassword: {
                 type: DataTypes.STRING,
