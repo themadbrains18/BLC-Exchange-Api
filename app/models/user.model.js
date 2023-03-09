@@ -38,7 +38,9 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: 'disable'
             },
             kycstatus: {
-                type: DataTypes.BOOLEAN
+                type: DataTypes.ENUM,
+                values: ['success', 'pending', 'reject'],
+                allowNull: true
             },
             tradingPassword: {
                 type: DataTypes.STRING,

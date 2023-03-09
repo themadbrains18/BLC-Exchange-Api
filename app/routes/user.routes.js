@@ -6,6 +6,7 @@ module.exports = app => {
   router.post("/create", users.register);
   router.post("/login", users.login);
   router.post('/',users.checkUser);
+  router.post('/exist',users.userExist);
   router.put('/update',users.updateUser);
   router.post('/googleAuth', users.verifyGoogleAuth);
   router.post('/userinfo',users.userAuthenticate);
