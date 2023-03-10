@@ -46,46 +46,16 @@ exports.kycAll = async (req, res) => {
 exports.kycUpdate = async (req, res) => {
     console.log("=========req,", req.body.status)
     try {
-        
+        let status =  req.body.status
         await user.findOne({ where: { id: parseInt(req.params.id) } }).then(async (users) => {
             if (users) {
-                // if(req.body.status === 'success'){
                     await users.update({ kycstatus: req.body.status }).then(async (updateRecord) => {
-                        await db.kyc.update({ isVerified: true }, { where: { user_id: parseInt(req.params.id) } })
+                        await db.kyc.update({ isVerified: (status=='success'?true:false) }, { where: { user_id: parseInt(req.params.id) } })
     
                         let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
     
                         return res.send({ status: 200, data: newReocrd });
-                    })
-                // }
-                // if(req.body.status === 'reject'){
-                //     await users.update({ kycstatus: 'pending'}).then(async (updateRecord) => {
-                //         await db.kyc.destroy ({ where: { user_id: parseInt(req.params.id) } })
-    
-                //         let newReocrd = await db.kyc.findOne({ where: { user_id: parseInt(req.params.id) } })
-    
-                //         return res.send({ status: 200, data: newReocrd });
-                //     })
-                // }
-              
-                    //    if (updateRecord) {
-
-                    // .then((record)=>{
-
-
-                    //     if(record){
-                    //         console.log("record",record)
-
-                    //         if (updateRecord) {
-                    //             return res.send({ status: 200, data: updateRecord });
-                    //         }
-                    //     }
-             
-
-
-                // }).catch((e) => {
-                //     console.log("=========error", e)
-                // })
+                    })       
             }
         }).catch((e) => {
             console.log("==========e", e)
