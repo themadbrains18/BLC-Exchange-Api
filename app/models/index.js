@@ -38,6 +38,12 @@ db.userpaymentmethod = require('./users_payment_methods.model.js')(sequelize, Da
 //  db.users.sync({ force: true }); 
 db.marketorder = require('./marketorder.model.js')(sequelize,DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.users.sync({ force: true }); 
+//  db.withdraws.sync({ force: true }); 
+//  db.paymentmethod.sync({ force: true }); 
+//  db.userpaymentmethod.sync({ force: true }); 
+//  db.posts.sync({ force: true }); 
+
+
+
    
 module.exports = db;
