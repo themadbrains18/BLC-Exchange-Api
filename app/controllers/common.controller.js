@@ -98,16 +98,25 @@ exports.sendemail = async (req, res) => {
   const { email } = req.body;
   try {
     let otp = createRandomNumber(6, true, false, false);
-    await sendEmailOtp(email, otp, res);
+    await sendEmailOtp(email, otp,false, res);
   } catch (error) {
     res.send({ status: 500, message: error })
+  }
+}
+
+exports.emailotp = async (number, otp,reset, res) => {
+  try {
+    await sendEmailOtp(number, otp, reset, res);
+    
+  } catch (error) {
+
   }
 }
 
 // ===================================================================
 // =============Destroy previous Email OTP adn Stroe new Email OTP================
 // ===================================================================
-const sendEmailOtp = async (email, otp, res) => {
+const sendEmailOtp = async (email, otp,reset, res) => {
   try {
     var condition = email ? { username: { [Op.like]: email } } : null;
     await userOtp.findOne({ where: condition }).then(async (otpExist) => {
@@ -118,7 +127,7 @@ const sendEmailOtp = async (email, otp, res) => {
             console.log('=======step 2====')
             await userOtp.create({ username: email, otp: otp }).then(async (result) => {
               console.log('=======step 3====')
-              await sendOtpEmail(email, otp, res); //Send password email to register email 
+              await sendOtpEmail(email, otp,reset, res); //Send password email to register email 
             }).catch((error) => {
               return { status: 500, data: error }
             })
@@ -127,7 +136,7 @@ const sendEmailOtp = async (email, otp, res) => {
       }
       else {
         await userOtp.create({ username: email, otp: otp }).then(async (result) => {
-          await sendOtpEmail(email, otp, res); //Send password email to register email 
+          await sendOtpEmail(email, otp,reset, res); //Send password email to register email 
         }).catch((error) => {
           return { status: 500, data: error }
         })
@@ -145,22 +154,54 @@ const sendEmailOtp = async (email, otp, res) => {
 // ===================================================================
 // ==========================Final OTP Email Send=====================
 // ===================================================================
-const sendOtpEmail = async (email, otp, res) => {
+const sendOtpEmail = async (email, otp,reset, res) => {
   console.log('=======step 4====')
   try {
-    app.mailer.send('otp', {
+ app.mailer.send('otp', {
       to: email,
       subject: `【BLC EXCHANGE】Otp Verification`,
       data: { email: email, otp: otp }
     }, (err) => {
       console.log(err, ' errerrerr')
-
       if (err) {
         console.log(err)
         return { status: 500, message: err.message };
       } else {
         console.log('=======step 7====')
-        res.status(200).send({ status: 200, message: "Otp Sent" });
+
+      
+          if (reset === true) {
+            return true;
+          }
+          else{
+            res.status(200).send({ status: 200, message: "Otp Sent" });
+          }
+        }
+      
+
+    })
+
+  } catch (error) {
+    console.error(' ===== ', error)
+    return { status: 500, message: error.message, };
+  }
+}
+// ===================================================================
+// ========================== Reset Email Link Send=====================
+// ===================================================================
+exports.sendResetEmail = async (email, res) => {
+
+  try {
+    app.mailer.send('link', {
+      to: email,
+      subject: `【BLC EXCHANGE】Reset Password`,
+      data: { email: email, message: email }
+    }, (err) => {
+      if (err) {
+        console.log(err)
+        return { status: 500, message: err.message };
+      } else {
+        res.status(200).send({ status: 200, message: "Link Sent on your regisered email" });
       }
 
     })
@@ -179,7 +220,7 @@ exports.sendsms = async (req, res) => {
   const { number, dial_code } = req.body;
   try {
     let otp = createRandomNumber(6, true, false, false);
-    await sendMobileOtp(number, otp, dial_code, res);
+    await sendMobileOtp(number, otp, dial_code,false, res);
 
   } catch (error) {
     res.send({ status: 500, message: error })
@@ -190,7 +231,16 @@ exports.sendsms = async (req, res) => {
 // =======Destroy previous Mobile OTP adn Stroe new Mobile OTP========
 // ===================================================================
 
-const sendMobileOtp = async (number, otp, dial_code, res) => {
+exports.phoneotp = async (number, otp, dial_code, reset, res) => {
+  try {
+    await sendMobileOtp(number, otp, dial_code, reset, res);
+    
+  } catch (error) {
+
+  }
+}
+
+const sendMobileOtp = async (number, otp, dial_code, reset, res) => {
   let bobo = { "username": number, "otp": otp };
   try {
     var condition = number ? { username: { [Op.like]: number } } : null;
@@ -200,7 +250,7 @@ const sendMobileOtp = async (number, otp, dial_code, res) => {
           if (deleteOtp) {
             userOtp.create(bobo).then(async (result) => {
               if (result) {
-                await sendSmsOtp(dial_code + '' + number, otp, res);//Send password email to register email 
+                await sendSmsOtp(dial_code + '' + number, otp, reset, res);//Send password email to register email 
               }
             }).catch((error) => {
               return res.send({ status: 500, data: error })
@@ -215,7 +265,7 @@ const sendMobileOtp = async (number, otp, dial_code, res) => {
       else {
         userOtp.create(bobo).then(async (result) => {
           if (result) {
-            await sendSmsOtp(dial_code + '' + number, otp, res);//Send password email to register email 
+            await sendSmsOtp(dial_code + '' + number, otp, reset, res);//Send password email to register email 
           }
         }).catch((error) => {
           return res.send({ status: 500, data: error })
@@ -234,18 +284,28 @@ const sendMobileOtp = async (number, otp, dial_code, res) => {
 // ===================================================================
 // ==========================Final OTP SMS Send=====================
 // ===================================================================
-const sendSmsOtp = async (number, Otp, res) => {
+const sendSmsOtp = async (number, Otp, reset, res) => {
   try {
     let message = 'Dear User, Your OTP is ' + Otp + ' Never share this OTP with anyone, this OTP expire in two minutes. More Info: https://stackoverflow.com/ From mlmsig'
     let url = 'http://sms.gniwebsolutions.com/submitsms.jsp?user=' + process.env.SMSUSER + '&key=' + process.env.SMSKEY + '&mobile=' + number + '&senderid=' + process.env.SMSSENDERID + '&message=' + message + '&accusage=' + process.env.ACCUSAGE;
     console.log(url);
 
-    await axios.get(url)
+    let data = await axios.get(url)
       .then(function (response) {
-        console.log(response.data);
-        return res.status(200).send({ status: 200, message: 'OTP has been sent on Mobile Number' });
+        return response
       })
       .catch(error => console.log('error', error));
+    
+    if (data) {
+      
+      if (reset === true) {
+        return true;
+      }
+      else {
+        res.status(200).send({ status: 200, message: 'OTP has been sent on Mobile Number' });
+      }
+
+    }
   } catch (error) {
     console.error(' ===== ', error)
     return res.send({ status: 500, data: error })
@@ -310,36 +370,36 @@ const generateTRC20Address = () => {
 
 exports.getPriceOfTokenBYCurrency = async (userid, currency) => {
   try {
-    
-      let token = await tokens.findAll({});
-      
-      if (token) {
 
-        let userToken = '';
-        for (const item of token) {
-          if (userToken === '') {
-            userToken = item.symbol;
-          }
-          else {
-            if (!userToken.includes(item.token)) {
-              userToken += ',' + item.symbol;
-            }
+    let token = await tokens.findAll({});
+
+    if (token) {
+
+      let userToken = '';
+      for (const item of token) {
+        if (userToken === '') {
+          userToken = item.symbol;
+        }
+        else {
+          if (!userToken.includes(item.token)) {
+            userToken += ',' + item.symbol;
           }
         }
-
-        let url = process.env.PRICECONVERTURL;
-
-        let priceObj = await fetch(url + "fsyms=" + userToken + "&tsyms=" + currency + '&api_key=' + process.env.MIN_API_KEY)
-          .then(response => response.text())
-          .then(result => {
-            return JSON.parse(result);
-          }).catch(error => console.log('error', error));
-
-          return priceObj;
-
       }
 
-    
+      let url = process.env.PRICECONVERTURL;
+
+      let priceObj = await fetch(url + "fsyms=" + userToken + "&tsyms=" + currency + '&api_key=' + process.env.MIN_API_KEY)
+        .then(response => response.text())
+        .then(result => {
+          return JSON.parse(result);
+        }).catch(error => console.log('error', error));
+
+      return priceObj;
+
+    }
+
+
   } catch (error) {
 
   }
@@ -407,29 +467,29 @@ exports.createDepositData = async (cid, data, address, coinList, res) => {
     })
 
     return trx;
-    
+
   } catch (error) {
     console.error(' ===== ', error)
   }
 }
 
 
-exports.createTRXDepositData=async(data, address)=>{
-  
+exports.createTRXDepositData = async (data, address) => {
+
   const fullNode = process.env.TRONURL;
   const solidityNode = process.env.TRONURL;
   const eventServer = process.env.TRONURL;
   const privateKey = process.env.TRONKEY;
-  const tronWeb = new TronWeb(fullNode,solidityNode,eventServer,privateKey);
+  const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
 
   const addressBase58 = tronWeb.address.toHex(address)
-  let trx=[];
+  let trx = [];
   data.map((item) => {
     let record;
-    
-    if(item.raw_data!=undefined && item.raw_data.contract[0].parameter.value.to_address!=undefined && item.raw_data.contract[0].parameter.value.to_address!=false){
-      
-      if(item.raw_data.contract[0].parameter.value.to_address === addressBase58){
+
+    if (item.raw_data != undefined && item.raw_data.contract[0].parameter.value.to_address != undefined && item.raw_data.contract[0].parameter.value.to_address != false) {
+
+      if (item.raw_data.contract[0].parameter.value.to_address === addressBase58) {
         record = {
           "network": 'TRC20',
           "tokenName": 'TRX',
@@ -438,7 +498,7 @@ exports.createTRXDepositData=async(data, address)=>{
           "tx_hash": item?.txID,
           "from_address": tronWeb.address.fromHex(item.raw_data.contract[0].parameter.value.owner_address),
           "to_address": item.raw_data.contract[0].parameter.value.to_address,
-          "value": item.raw_data.contract[0].parameter.value.amount / 10**6,
+          "value": item.raw_data.contract[0].parameter.value.amount / 10 ** 6,
           "successful": true,
         }
         trx.push(record);
@@ -448,12 +508,12 @@ exports.createTRXDepositData=async(data, address)=>{
   return trx;
 }
 
-exports.createTRC20DepositData=async(data, address, coinList)=>{
-  
-  let trx=[];
+exports.createTRC20DepositData = async (data, address, coinList) => {
+
+  let trx = [];
   data.map((item) => {
     let record;
-    if (coinList.includes(item?.token_info.symbol) === true && item?.to === address){
+    if (coinList.includes(item?.token_info.symbol) === true && item?.to === address) {
       record = {
         "network": 'TRC20',
         "tokenName": item?.token_info.symbol,
@@ -462,7 +522,7 @@ exports.createTRC20DepositData=async(data, address, coinList)=>{
         "tx_hash": item?.transaction_id,
         "from_address": item?.from,
         "to_address": item?.to,
-        "value": item?.value / 10**item?.token_info.decimals,
+        "value": item?.value / 10 ** item?.token_info.decimals,
         "successful": true,
       }
       trx.push(record);

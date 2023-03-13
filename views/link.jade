@@ -27,9 +27,9 @@ html
             color: #1e1e1e;
           }
           h1 {
-            font-size: 40px;
-            font-weight: 500;
-            line-height: 22px;
+            font-size: 16px;
+            font-weight: 300;
+            line-height: 15px;
             color: #1da2b4;
           }
           p {
@@ -56,13 +56,13 @@ html
         #main
           
           #content  
-            h2 Verify your email,Your verification code will be valid for 5 minutes.
-            p You're signing up with your email account.
-            h1 #{data.otp}
-            p *Don't forward this email or verification code to anyone.
+            h2 You have requested to Reset your password
+            p To reset your password click on following link
+            h1 http://localhost:3000/forget?email=#{data.message}&resetPassword=true
+            p *Don't forward this email or link to anyone.
             #divider
               p 
             #note   
               p Any question or in need of help?
-              p You can refer to Help center or send email support@blcxchange.com to contact us
+              p You can refer to Help center or send email support@blcexchnage.com to contact us
               p * This mail is sent automatically and you do not need to reply. 

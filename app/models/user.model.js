@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.ENUM,
                 values: ['NA','success', 'pending', 'reject'],
                 allowNull: true,
+                defaultValue: 'NA'
             },
             tradingPassword: {
                 type: DataTypes.STRING,
