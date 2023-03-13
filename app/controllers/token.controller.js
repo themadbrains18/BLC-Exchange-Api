@@ -27,8 +27,6 @@ exports.getMarketCoin = async (req, res) => {
           }
         }
 
-        // console.log('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=' + symbol + '&tsyms=USDT&api_key=' + process.env.MIN_API_KEY);
-
         let coins = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=' + symbol + '&tsyms=USDT&api_key=' + process.env.MIN_API_KEY).then(response =>
           response.json()
         ).then(result => { return result; })
@@ -39,7 +37,7 @@ exports.getMarketCoin = async (req, res) => {
         result.forEach(item => {
           let obj = coins.RAW[item.symbol]['USDT'];
           let coinData = {
-            'PRICE': obj.PRICE,
+            'PRICE': item.tokenType === 'global'? obj.PRICE : item.price,
             'FROMSYMBOL': obj.FROMSYMBOL,
             'CHANGE24HOUR': obj.CHANGE24HOUR,
             'VOLUME24HOUR': obj.VOLUME24HOUR,
@@ -49,7 +47,8 @@ exports.getMarketCoin = async (req, res) => {
             'TOKENLOGOURL': item.image,
             'TOKENTYPE': item.tokenType,
             'FULLNAME': item.fullName,
-            'SYMBOL': item.symbol
+            'SYMBOL': item.symbol,
+            'ID' : item.id
           }
           coinsArray.push(coinData);
         })
