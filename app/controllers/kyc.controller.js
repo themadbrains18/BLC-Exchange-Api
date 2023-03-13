@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
 
     Kyc.findOne({where:{user_id:user_id}}).then((user)=>{
       if(!user){
-        user.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country, user_id:user_id,statement:statement }).then(async (data) => {
+        Kyc.create({ name: fname, lname: lname, doctype: doctype, docnumber: docnumber, dob: dob, idfront: idfront, idback: idback, country: country, user_id:user_id,statement:statement }).then(async (data) => {
           if (data) {
             Users.update({kycstatus:'pending'}, {
               where: { id: user_id }
