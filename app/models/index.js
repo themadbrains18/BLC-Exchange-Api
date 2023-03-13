@@ -41,9 +41,10 @@ db.marketorder = require('./marketorder.model.js')(sequelize,DataTypes);
 //  db.withdraws.sync({ force: true }); 
 //  db.paymentmethod.sync({ force: true }); 
 //  db.userpaymentmethod.sync({ force: true }); 
-//  db.posts.sync({ force: true }); 
+//  db.tokens.sync({ force: true }); 
 
 
 
+//  db.tokens.sync({ force: true }); 
    
 module.exports = db;

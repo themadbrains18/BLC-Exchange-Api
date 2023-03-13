@@ -32,6 +32,9 @@ exports.getMarketCoin = async (req, res) => {
         ).then(result => { return result; })
           .catch(console.error);
 
+          console.log(coins, ' === coins v coins')
+
+
         let coinsArray = [];
 
         result.forEach(item => {

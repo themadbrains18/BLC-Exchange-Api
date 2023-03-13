@@ -7,10 +7,19 @@ const users = db.users;
 const userOtp = db.userotp;
 const loginDetails = db.loginDetail
 const { Op } = require("sequelize");
-const { storeWalletAddress } = require('./common.controller');
+const { storeWalletAddress, sendResetEmail, phoneotp,emailotp } = require('./common.controller');
 var generator = require('generate-password');
 const tokenSecret = 'mdb!@#123psd';
 var moment = require('moment');
+
+const createRandomNumber = (length, numbers, lowercase, uppercase) => {
+  return generator.generate({
+    length: length,
+    numbers: true,
+    lowercase: lowercase,
+    uppercase: uppercase
+  })
+}
 
 // ===================================================================
 // ================API Request Register New user =====================
@@ -343,9 +352,10 @@ exports.verifyGoogleAuth = (req, res) => {
 // ===================================================================
 
 exports.updatePassword = async (req, res) => {
-  const { newpassword } = req.body;
-
-  users.findOne({ where: { id: req.body.id } }).then((user) => {
+  const { newpassword,email,id } = req.body;
+  
+  var condition = email ? { email: { [Op.like]: email } } : { id: { [Op.like]: id } };
+  users.findOne({  where: condition  }).then((user) => {
     if (user) {
       let bcryptPassword = bcrypt.hashSync(newpassword, 12);
       user.update({ passwordHash: bcryptPassword }).then((updateRecord) => {
@@ -358,7 +368,7 @@ exports.updatePassword = async (req, res) => {
     }
   }).catch((error) => {
     console.error('====', error);
-    return res.send({ status: 200, data: error });
+    return res.send({ status: 404, data: error });
   })
 
 }
@@ -479,13 +489,21 @@ exports.depositAddress = async (req, res) => {
   }
 }
 
-exports.userExist = async (req, res) => {
+exports.userExist = async (req, res,next) => {
   const { username, dial_code, requestType } = req.body;
   if (requestType !== 'mobile') {
     var condition = username ? { email: { [Op.like]: username } } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
+        let otp = createRandomNumber(6, true, false, false);
+        let reset = true;
+        let sendOtp =  await emailotp(username, otp,reset, res);
         res.send({ status: 200, data: result })
+      // let response=  await sendResetEmail(username,res)
+      // if(response){
+      //   res.status(200).send({ status: 200, data:response })
+      // }
+           
       }
       else {
         res.send({ status: 404, message: 'This email does not exist. Please enter the correct one.' })
@@ -499,7 +517,17 @@ exports.userExist = async (req, res) => {
     var condition = username ? { [Op.and]: [{ number: username }, { dial_code: dial_code }] } : null;
     users.findOne({ where: condition }).then(async (result) => {
       if (result) {
+    
+        let otp = createRandomNumber(6, true, false, false);
+        let reset = true;
+        let sendOtp =  await phoneotp(username, otp, dial_code,reset, res);
         res.send({ status: 200, data: result })
+
+        // console.log(sendOtp,'====here sendOtp')
+        // if(sendOtp === true){
+        //   res.send({ status: 200, data: result })
+        // }
+        
       }
       else {
         res.send({ status: 404, message: 'This phone number does not exist. Please enter the correct one.' })
