@@ -140,6 +140,7 @@ require("./app/dashboard/routes/token.routes")(app);
 require("./app/dashboard/routes/kyc.routes")(app);
 require("./app/dashboard/routes/deposit.routes")(app);
 require("./app/dashboard/routes/withdraw.routes")(app);
+require("./app/dashboard/routes/payment.routes")(app);
 
 
 
