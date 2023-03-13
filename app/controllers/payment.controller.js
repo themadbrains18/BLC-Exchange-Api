@@ -57,14 +57,38 @@ const single = async ( req, res) => {
  */
 const addMethod = async (req , res) => {
   console.log(req.body)
+  const {user_id} = req.body;
   try {
-    let newRecord = await db.userpaymentmethod.create(req.body)
-    res.status(200).send({message : "Payment method added successfully...", result : newRecord})
+    let passCodeVerify = await db.users.findOne({
+      where : {id : user_id},
+      attributes: {
+        exclude: ['id', 'number', 'email', 'dial_code', 'passwordHash', 'bep20Address', 'bep20Hashkey', 'trc20Address', 'trc20Hashkey', 'TwoFA', 'kycstatus', 'statusType', 'registerType', 'role', 'secret', 'own_code', 'refeer_code', 'antiphishing', 'createdAt', 'updatedAt', 'UID']
+      },
+    })
+
+    if(passCodeVerify.tradingPassword != ""){
+      console.log(passCodeVerify.tradingPassword, ' passCodeVerify.tradingPasswordpassCodeVerify.tradingPassword',req.body.passcode)
+       if(passCodeVerify.tradingPassword === req.body.passcode){
+               let newRecord = await db.userpaymentmethod.create(req.body)
+               res.status(200).send({res : "success",message : "Payment method added successfully...", result : passCodeVerify})
+       }else{
+         res.status(401).send({res : "fail", message : "Your passcode is wrong. Please try again."})
+       }
+    }else{
+      res.status(401).send({res : "fail",message : "Your trading password is not create."})
+    }
+
+
   } catch (error) {
     res.status(401).send(error)
   }
 }
 
+/**
+ * get payment method by use id
+ * @param {*} req 
+ * @param {*} res 
+ */
 
 const getMethod = async (req, res) => {
   const {id } = req.params
@@ -73,7 +97,7 @@ const getMethod = async (req, res) => {
 
     
 
-    let getDataByid = await db.sequelize.query('select * from blc.userpaymentmethods as upm inner join blc.payment_methods as pms where upm.pmid = pms.id and upm.user_id='+id)
+    let getDataByid = await db.sequelize.query('select upm.id, upm.user_id, upm.pmid, upm.status, upm.pm_name, upm.pmObject,pms.id as pms, pms.icon, pms.region from blc.userpaymentmethods as upm inner join blc.payment_methods as pms where upm.pmid = pms.id and upm.user_id='+id)
 
     res.status(200).send(getDataByid[0])
 
@@ -83,12 +107,25 @@ const getMethod = async (req, res) => {
 }
 
 
+/**
+ * delete request by method id
+ */
 
+const deleteRequest = async (req, res) => {
+  const {id } = req.params
+  try {
+   let result =  await db.userpaymentmethod.destroy({where : {id : id}});
+   res.status(200).send({ message : "Payment method successfully deleted!", result : result})
+  } catch (error) {
+    res.status(401).send(error)
+  }
+}
 
 module.exports = {
   create,
   list,
   single,
   addMethod,
-  getMethod
+  getMethod,
+  deleteRequest
 }

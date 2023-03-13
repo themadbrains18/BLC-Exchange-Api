@@ -29,7 +29,6 @@ db.kyc = require('./kyc.model.js')(sequelize, DataTypes);
 db.deposit = require('./deposit.model.js')(sequelize, DataTypes);
 db.transferhistory = require('./transferhistory.model')(sequelize, DataTypes);
 db.loginDetail = require('./loginDetails.model')(sequelize, DataTypes);
-
 db.posts = require('./post.model.js')(sequelize, DataTypes);
 db.withdraws = require('./withdraw.model.js')(sequelize, DataTypes);
 db.paymentmethod = require('./paymentMethod.model.js')(sequelize, DataTypes);
@@ -38,6 +37,6 @@ db.userpaymentmethod = require('./users_payment_methods.model.js')(sequelize, Da
 //  db.users.sync({ force: true }); 
 db.marketorder = require('./marketorder.model.js')(sequelize,DataTypes);
 //  db.sequelize.sync({ force: true }); 
-//  db.tokens.sync({ force: true }); 
+//  db.posts.sync({ force: true }); 
    
 module.exports = db;
