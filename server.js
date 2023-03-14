@@ -141,6 +141,9 @@ const { cronMarketBuySell } = require('./app/controllers/marketorder.controller.
 require("./app/dashboard/routes/user.routes")(app);
 require("./app/dashboard/routes/token.routes")(app);
 require("./app/dashboard/routes/kyc.routes")(app);
+require("./app/dashboard/routes/deposit.routes")(app);
+require("./app/dashboard/routes/withdraw.routes")(app);
+require("./app/dashboard/routes/payment.routes")(app);
 
 const { socketOrder } = require("./app/controllers/order.controller");
 const {socketChat} = require("./app/controllers/chat.controller");

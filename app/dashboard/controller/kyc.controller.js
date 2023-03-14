@@ -28,10 +28,11 @@ exports.kycAll = async (req, res) => {
                     idfront: k.idfront,
                     idback: k.idback,
                     statement: k.statement,
-                    email: user[0].email,
-                    status: user[0].kycstatus,
+                    email: user[0]?.email,
+                    number:user[0]?.number,
+                    status: user[0]?.kycstatus,
                     isVerified: k.isVerified,
-                    user_id: user[0].id
+                    user_id: user[0]?.id
                 }
                 record.push(obj);
             }
