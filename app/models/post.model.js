@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false
             },
             p_method: {
-                type: DataTypes.STRING
+                type: DataTypes.JSON
             },
             payment_time: {
                 type: DataTypes.STRING

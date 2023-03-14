@@ -62,6 +62,7 @@ exports.register = async (req, res) => {
                 users.create({ email: email, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret), UID : uuid }).then(async (data) => {
                   if (data) {
                     // console.log(data)
+                    let result = await saveLoginDetails(data.id)
                     setTimeout(() => {
                       let wallet = storeWalletAddress(data.id);
                     }, 1000);
@@ -85,6 +86,7 @@ exports.register = async (req, res) => {
                 users.create({ number: number, dial_code: dial_code, passwordHash: bcryptPassword, registerType: requestType, own_code: own_refer_code, refeer_code: referal_code, secret: JSON.stringify(secret),UID : uuid }).then(async (data) => {
                   if (data) {
                     // console.log(data)
+                    let result = await saveLoginDetails(data.id)
                     setTimeout(() => {
                       let wallet = storeWalletAddress(data.id);
                     }, 1000);

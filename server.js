@@ -138,6 +138,8 @@ cron.schedule("*/30 * * * * *", function() {
 require("./app/dashboard/routes/user.routes")(app);
 require("./app/dashboard/routes/token.routes")(app);
 require("./app/dashboard/routes/kyc.routes")(app);
+require("./app/dashboard/routes/deposit.routes")(app);
+require("./app/dashboard/routes/withdraw.routes")(app);
 
 
 
