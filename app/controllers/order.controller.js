@@ -3,6 +3,7 @@ const Order = db.orders;
 const posts = db.posts;
 const assets = db.assets;
 const users = db.users;
+const tokens = db.tokens
 
 const Op = db.Sequelize.Op;
 
@@ -100,7 +101,7 @@ exports.releaseOrder = async (req, res) => {
                                                 assets.create({
                                                     "userID": orderData.buy_user_id,
                                                     "accountType": 'Main Account',
-                                                    "token_id": post.token_id,
+                                                    "token_id": orderData.token_id,
                                                     "balance": orderData.receive_amount,
                                                     "walletType": "main_wallet",
                                                 }).then((record) => {

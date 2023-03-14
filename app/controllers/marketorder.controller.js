@@ -488,3 +488,28 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
     })
   })
 }
+exports.getAllOrders = (req, res) => {
+console.log("=========req")
+  try {
+    tokens.findOne({ where: { symbol: req.params.token } }).then((result) => {
+      if (result) {
+        marketOrder.findAll({ where: { tokenid: result.id , userid:req.params.userid } }, {
+          order: [
+            ['id', 'DESC'],
+          ],
+        }).then((result) => {
+          if (result) {
+            res.send({ status: 200, data: result })
+          }
+        }).catch((error) => {
+          console.error(error)
+          res.send({ status: 500, data: error })
+        })
+      }
+    })
+
+  } catch (error) {
+    console.error(error)
+    res.send({ status: 500, data: error })
+  }
+}

@@ -42,7 +42,7 @@ db.notifications = require('./notification.model.js')(sequelize, DataTypes);
 //  db.withdraws.sync({ force: true }); 
 //  db.paymentmethod.sync({ force: true }); 
 //  db.userpaymentmethod.sync({ force: true }); 
-//  db.kyc.sync({ force: true }); 
+//  db.marketorder.sync({ force: true }); 
 
 
 
