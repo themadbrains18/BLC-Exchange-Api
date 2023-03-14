@@ -129,21 +129,42 @@ require("./app/routes/post.routes")(app);
 require("./app/routes/paymentmethod.routes")(app);
 require("./app/routes/marketorder.routes")(app);
 
+require("./app/routes/order.routes")(app);
+require("./app/routes/chat.routes")(app);
+
 const { cronMarketBuySell } = require('./app/controllers/marketorder.controller.js');
 
-cron.schedule("*/30 * * * * *", function() {
-  console.log('cron');
-  cronMarketBuySell()
-});
+// cron.schedule("*/30 * * * * *", function() {
+//   cronMarketBuySell()
+// });
+
 require("./app/dashboard/routes/user.routes")(app);
 require("./app/dashboard/routes/token.routes")(app);
 require("./app/dashboard/routes/kyc.routes")(app);
 
+const { socketOrder } = require("./app/controllers/order.controller");
+const {socketChat} = require("./app/controllers/chat.controller");
 
 
+const server = require('http').createServer(app);
+
+const io = require('socket.io')(server, {cors: {origin :'http://localhosst:3000',methods:["GET","POST"]}});
+
+io.on('connection', socket => {
+  
+  socket.on("order", function(body){
+    socketOrder(body.orderid, socket);
+  })
+
+  socket.on("chat", function(body){
+    console.log('========i am here')
+    socketChat(socket,body);
+  })
+  
+});
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
