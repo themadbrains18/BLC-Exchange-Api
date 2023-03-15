@@ -39,6 +39,15 @@ db.orders = require('./order.model.js')(sequelize, DataTypes);
 db.chats = require('./chat.model.js')(sequelize, DataTypes);
 db.notifications = require('./notification.model.js')(sequelize, DataTypes);
 //  db.sequelize.sync({ force: true }); 
+//  db.withdraws.sync({ force: true }); 
+//  db.paymentmethod.sync({ force: true }); 
+//  db.userpaymentmethod.sync({ force: true }); 
+//  db.marketorder.sync({ force: true }); 
+
+
+
+//  db.tokens.sync({ force: true }); 
+//  db.posts.sync({ force: true }); 
 //  db.notifications.sync({ force: true }); 
    
 module.exports = db;

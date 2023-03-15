@@ -6,6 +6,7 @@ module.exports = app => {
   // Create a new Tutorial
   router.post("/create", market.create);
   router.get("/:token",market.getAll);
+  router.get("/getOrder/:token/:userid",market.getAllOrders);
   router.get('/trasfer/cron',market.cronMarketBuySell);
   // router.get('/chart/:symbol',market.marketChartData);
 

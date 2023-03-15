@@ -70,6 +70,9 @@ exports.kycById = async (req, res) => {
       if (result) {
        return res.status(200).send(result);
       }
+      else{
+        return res.status(400).send({message:'something wrong'});
+      }
     }).catch((error) => {
       console.error('===========', error);
     })

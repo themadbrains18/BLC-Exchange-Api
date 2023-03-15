@@ -8,7 +8,7 @@ const Notification = db.notifications;
 exports.create = (req, res) => {
 
   try {
-    const { post_id, from, to, orderid, message } = req.body;
+    const { post_id, from, to, orderid, message,buy_user_id,sell_user_id } = req.body;
     let chat = [];
     let obj = {};
 
@@ -37,7 +37,7 @@ exports.create = (req, res) => {
       }
       else {
 
-        let createObj = { post_id, from, to, orderid, chat };
+        let createObj = { post_id, buy_user_id, sell_user_id, orderid, chat };
         chats.create(createObj).then(async (result) => {
           if (result) {
             let notifyObj = { sender: chat[0].from, receiver: chat[0].to, type: 'order', orderid: orderid, message: chat[0].message };
