@@ -7,6 +7,7 @@ module.exports = app => {
   router.post("/create", market.create);
   router.get("/:token",market.getAll);
   router.get('/trasfer/cron',market.cronMarketBuySell);
+  // router.get('/chart/:symbol',market.marketChartData);
 
   app.use('/api/market', router);
 };

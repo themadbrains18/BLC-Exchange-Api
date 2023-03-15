@@ -147,7 +147,7 @@ require("./app/dashboard/routes/payment.routes")(app);
 
 const { socketOrder } = require("./app/controllers/order.controller");
 const {socketChat} = require("./app/controllers/chat.controller");
-
+const {socketMarket} = require("./app/controllers/marketorder.controller")
 
 const server = require('http').createServer(app);
 
@@ -160,8 +160,12 @@ io.on('connection', socket => {
   })
 
   socket.on("chat", function(body){
-    console.log('========i am here')
     socketChat(socket,body);
+  })
+
+  socket.on("market", function(body){
+    console.log(body,'market body')
+    socketMarket(socket,body);
   })
   
 });

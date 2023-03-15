@@ -3,7 +3,7 @@ const marketOrder = db.marketorder;
 const assets = db.assets;
 const tokens = db.tokens;
 const Op = db.Sequelize.Op;
-
+var moment = require('moment');
 
 exports.create = (req, res) => {
 
@@ -59,13 +59,49 @@ exports.getAll = (req, res) => {
   try {
     tokens.findOne({ where: { symbol: req.params.token } }).then((result) => {
       if (result) {
-        marketOrder.findAll({ where: { tokenid: result.id } }, {
-          order: [
-            ['id', 'DESC'],
-          ],
-        }).then((result) => {
+        marketOrder.findAll({
+          where: { tokenid: result.id }, order: [
+            ['id', 'DESC']
+          ]
+        }).then(async (result) => {
           if (result) {
-            res.send({ status: 200, data: result })
+            let record = [];
+
+            for (const order of result) {
+
+              let date = moment(order.createdAt).format('L');
+              let newdate = date.split('/');
+              date = newdate[2] + '-' + newdate[0] + '-' + newdate[1];
+
+              let updatedate = moment(order.updateAt).format('L');
+              let newUpdateDate = updatedate.split('/');
+              updatedate = newUpdateDate[2] + '-' + newUpdateDate[0] + '-' + newUpdateDate[1];
+
+              let obj = {
+                id: order.id,
+                userid: order.userid,
+                tokenid: order.tokenid,
+                market_type: order.market_type,
+                order_type: order.order_type,
+                limit_usdt: order.limit_usdt,
+                volume_usdt: order.volume_usdt,
+                token_amount: order.token_amount,
+                status: order.status,
+                isCanceled: order.isCanceled,
+                createdAt: date,
+                updatedAt: updatedate,
+                open: order.limit_usdt,
+                high: order.limit_usdt,
+                low: order.limit_usdt,
+                close: order.limit_usdt
+              };
+
+              record.push(obj);
+            }
+
+            let chartData = await marketChartData(req.params.token);
+
+            res.send({ status: 200, data: record, hloc: chartData })
           }
         }).catch((error) => {
           console.error(error)
@@ -84,17 +120,19 @@ exports.cronMarketBuySell = () => {
   try {
     console.log('======================here ====================')
     marketOrder.findAll({ where: { status: false, isCanceled: false } }).then((marketResult) => {
-      console.log(marketResult.length,'=============here length')
+      console.log(marketResult.length, '=============here length')
       if (marketResult) {
         tokens.findAll({}).then(async (token) => {
           if (token) {
             let symbol = '';
             for (const d of token) {
-              if (symbol == '') {
-                symbol = d.symbol
-              }
-              else {
-                symbol += ',' + d.symbol;
+              if (d.tokenType === 'global') {
+                if (symbol == '') {
+                  symbol = d.symbol
+                }
+                else {
+                  symbol += ',' + d.symbol;
+                }
               }
             }
 
@@ -345,7 +383,7 @@ const updateBuyerSellerOrderStatus = (buyer, seller) => {
     }).catch((error) => {
       console.log('===seller market record update', error);
     })
-    
+
   }
 
   // console.log('===here case 7')
@@ -374,8 +412,8 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
     return item.order_type === 'sell'
   })
 
-  let previousSeller =[]; 
-  
+  let previousSeller = [];
+
   buyBids.map(async (buyer) => {
 
     let tt = token.filter((item) => {
@@ -394,23 +432,23 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
 
     console.log(marketPrice, '===marketPrice============')
 
-    if(previousSeller.length >0){
-      sellBids = sellBids.filter(function(el) { return el.id != previousSeller.id });
+    if (previousSeller.length > 0) {
+      sellBids = sellBids.filter(function (el) { return el.id != previousSeller.id });
     }
 
-    previousSeller=[];
+    previousSeller = [];
 
     sellBids.map(async (seller) => {
       if (marketPrice !== undefined) {
         if (buyer.tokenid === seller.tokenid && seller.token_amount >= buyer.amount_token) {
 
           previousSeller.push(seller);
-          
+
           //==============================================================================
           //===================Seller assets updates======================================
           //==============================================================================
 
-          assets.findOne({ userID: seller.userid, walletType: 'main_wallet',token_id: 1 }).then((asset) => {
+          assets.findOne({ userID: seller.userid, walletType: 'main_wallet', token_id: 1 }).then((asset) => {
 
             if (asset) { //check if seller USDT assets not exist 
               asset.update({ balance: parseFloat(asset.balance) + (parseFloat(buyer.token_amount) * parseFloat(marketPrice)) }).then((responseUsdt) => {
@@ -418,11 +456,11 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
                   // console.log('update usdt assets ')
                 }
               })
-              
+
             }
             else {
               // update seller USDT assets when exist  
-              console.log(parseFloat(buyer.token_amount) * parseFloat(marketPrice),'Seller usdt amount');
+              console.log(parseFloat(buyer.token_amount) * parseFloat(marketPrice), 'Seller usdt amount');
               assets.create({
                 "userID": seller.userid,
                 "accountType": 'Main Account',
@@ -449,14 +487,14 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
 
           // console.log('===here case 8')
           assets.findOne({ where: { userID: buyer.userid, walletType: 'main_wallet', token_id: buyer.tokenid } }).then((buyerassets) => {
-            
+
             if (buyerassets) { //check if seller token assets not exist 
-              buyerassets.update( { balance: parseFloat(buyerassets.balance) + parseFloat(buyer.token_amount) }).then((responseUsdt) => {
+              buyerassets.update({ balance: parseFloat(buyerassets.balance) + parseFloat(buyer.token_amount) }).then((responseUsdt) => {
                 if (responseUsdt) {
                   // console.log('update token assets ')
                 }
               })
-              
+
             }
             else {
               // update seller USDT assets when exist  
@@ -481,10 +519,83 @@ const buySellOnMarketPrice = (orders, marketPriceObj, token) => {
           //=======================Buyer assets updates End================================
 
           //=======================Update market buy sell record after matched=============
-          updateBuyerSellerOrderStatus(buyer,seller);
+          updateBuyerSellerOrderStatus(buyer, seller);
 
         }
       }
     })
   })
+}
+
+exports.socketMarket = async (socket, body) => {
+  try {
+    let data = await db.sequelize.query(`select market.*,token.symbol from blc.marketorders as market inner join blc.tokens as token on market.tokenid = token.id where token.symbol='${body.symbol}' order by id desc`);
+    let record = [];
+    for (const order of data[0]) {
+      let date = moment(order.createdAt).format('L');
+      let newdate = date.split('/');
+      date = newdate[2] + '-' + newdate[0] + '-' + newdate[1];
+
+      let updatedate = moment(order.updateAt).format('L');
+      let newUpdateDate = updatedate.split('/');
+      updatedate = newUpdateDate[2] + '-' + newUpdateDate[0] + '-' + newUpdateDate[1];
+
+      let obj = {
+        id: order.id,
+        userid: order.userid,
+        tokenid: order.tokenid,
+        market_type: order.market_type,
+        order_type: order.order_type,
+        limit_usdt: order.limit_usdt,
+        volume_usdt: order.volume_usdt,
+        token_amount: order.token_amount,
+        status: order.status,
+        isCanceled: order.isCanceled,
+        createdAt: date,
+        updatedAt: updatedate,
+        open: order.limit_usdt,
+        high: order.limit_usdt,
+        low: order.limit_usdt,
+        close: order.limit_usdt,
+        symbol: order.symbol
+      };
+
+      record.push(obj);
+    }
+
+    let chartData = await marketChartData(body.symbol);
+
+    socket.broadcast.emit("market", { record, hloc: chartData });
+  } catch (error) {
+
+  }
+}
+
+const marketChartData = async (symbol) => {
+  try {
+
+    let data = await db.sequelize.query(`SELECT DATE(createdAt) AS time, max(limit_usdt) AS high, min(limit_usdt) AS low,
+    CAST(SUBSTRING_INDEX(MIN(CONCAT(createdAt, '_', limit_usdt)), '_', -1) as double)  as open,
+	  CAST( SUBSTRING_INDEX(MAX(CONCAT(createdAt, '_', limit_usdt)), '_', -1)as double) AS close
+    FROM blc.marketorders AS marketorder where tokenid=(select id from blc.tokens where symbol='${symbol}' limit 1) GROUP BY time`);
+
+    // let dd = await db.marketorder.unscoped().findAll({
+    //   // attributes: [[db.sequelize.fn('max', db.sequelize.col('limit_usdt')), 'max'], 'createdAt'],
+    //   attributes: [
+    //     [db.sequelize.literal(`DATE(createdAt)`), 'date'],
+    //     [db.sequelize.fn('max', db.sequelize.col('limit_usdt')), 'max'],
+    //     [db.sequelize.fn('min', db.sequelize.col('limit_usdt')), 'min'],
+    // ],
+    //   group: ['date']
+    // })
+
+    //  console.log(dd)/
+
+    return data[0]
+
+    // res.status(200).send(data[0])
+
+  } catch (error) {
+    console.log(error)
+  }
 }
